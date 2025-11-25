@@ -1,0 +1,17 @@
+# Dependencias del Sistema de Gestión de Camas Hospitalarias
+
+# Framework Web
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# Base de Datos
+sqlmodel==0.0.22
+sqlalchemy==2.0.35
+
+# Redis (OPCIONAL - el sistema funciona sin esto)
+# Descomenta la siguiente línea si quieres usar Redis:
+# redis==5.2.0
+
+# Utilidades
+pydantic==2.9.2
+python-multipart==0.0.12
