@@ -756,6 +756,110 @@
             `;
         }
 
+        async function cargarPacientesEspera() {
+    const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes`);
+    let pacientes = await response.json();
+    
+    console.log(`\n📊 PACIENTES EN ESPERA - Debug:`);
+    console.log(`Total pacientes del hospital: ${pacientes.length}`);
+    
+    // Filtrar solo pacientes en espera (incluye derivaciones pendientes)
+    const enEspera = pacientes.filter(p => {
+        // Un paciente está en espera si:
+        // 1. No tiene cama asignada definitivamente (cama_id == null)
+        // 2. Está marcado como en_espera
+        // 3. O tiene derivación pendiente
+        const sinCama = !p.cama_id;
+        const marcadoEspera = p.en_espera;
+        const derivacionPendiente = p.derivacion_pendiente;
+        
+        const estaEnEspera = sinCama && (marcadoEspera || derivacionPendiente);
+        
+        if (estaEnEspera) {
+            console.log(`  ✅ Paciente en espera: ${p.nombre}`);
+            console.log(`     - en_espera: ${p.en_espera}`);
+            console.log(`     - derivacion_pendiente: ${p.derivacion_pendiente}`);
+            console.log(`     - hospital_origen_id: ${p.hospital_origen_id}`);
+            console.log(`     - cama_id: ${p.cama_id}`);
+        }
+        
+        return estaEnEspera;
+    });
+    
+    console.log(`Pacientes en espera filtrados: ${enEspera.length}\n`);
+    
+    const container = document.getElementById('pacientes-espera-container');
+    
+    if (enEspera.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay pacientes en espera</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            ${enEspera.map(p => {
+                // Determinar si es derivación
+                const esDerivaciónPendiente = p.derivacion_pendiente && p.hospital_origen_id;
+                
+                return `
+                    <div class="border rounded p-3 ${esDerivaciónPendiente ? 'bg-purple-50 border-purple-300' : ''}">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="font-semibold">${p.nombre}</p>
+                                <p class="text-xs text-gray-600">${p.sexo} • ${p.edad_categoria}</p>
+                                ${esDerivaciónPendiente ? '<span class="text-xs bg-purple-600 text-white px-2 py-1 rounded inline-block mt-1">🏥 Derivado</span>' : ''}
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600">Enfermedad: ${p.enfermedad}</p>
+                        ${p.aislamiento !== 'ninguno' ? `<p class="text-sm text-gray-600">Aislamiento: ${p.aislamiento}</p>` : ''}
+                        <p class="text-sm text-gray-600">Espera: ${p.tiempo_espera_min} min</p>
+                        
+                        ${p.es_embarazada ? '<span class="text-xs bg-pink-200 px-2 py-1 rounded mr-1">Embarazada</span>' : ''}
+                        ${p.es_adulto_mayor ? '<span class="text-xs bg-yellow-200 px-2 py-1 rounded">Adulto Mayor</span>' : ''}
+                        ${p.caso_sociosanitario ? '<span class="text-xs bg-purple-200 px-2 py-1 rounded mr-1">Sociosanitario</span>' : ''}
+                        ${p.espera_cardio ? '<span class="text-xs bg-red-200 px-2 py-1 rounded">Espera Cardio</span>' : ''}
+                        
+                        ${esDerivaciónPendiente ? `
+                            <div class="mt-3 pt-3 border-t border-purple-200">
+                                <p class="text-xs text-purple-700 font-medium mb-1">
+                                    Desde: ${getHospitalNombre(p.hospital_origen_id)}
+                                </p>
+                                ${p.motivo_derivacion ? `
+                                    <p class="text-xs text-gray-600 mb-2">
+                                        Motivo: ${p.motivo_derivacion}
+                                    </p>
+                                ` : ''}
+                                <div class="flex gap-2">
+                                    <button onclick="verDetallesPaciente('${p.id}')" 
+                                            class="flex-1 bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">
+                                        👁️ Ver
+                                    </button>
+                                    <button onclick="aceptarDerivacion('${p.id}')" 
+                                            class="flex-1 bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">
+                                        ✓ Aceptar
+                                    </button>
+                                    <button onclick="rechazarDerivacion('${p.id}')" 
+                                            class="flex-1 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                                        ✗ Rechazar
+                                    </button>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="mt-2">
+                                <button onclick="verDetallesPaciente('${p.id}')" 
+                                        class="w-full bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">
+                                    👁️ Ver Detalles
+                                </button>
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
         function renderBotonesCama(cama) {
             if (cama.estado === 'libre') {
                 return '';
@@ -830,67 +934,42 @@
             }
             
             if (cama.estado === 'en_traslado') {
-                botones += `
-                    <div class="text-xs text-center text-orange-700 font-semibold">
-                        ⏳ Esperando confirmación
-                    </div>
-                `;
+                // Verificar si hay paciente derivado que ya fue aceptado
+                const pacienteDerivado = cama.paciente_derivado;
+                const fueAceptado = pacienteDerivado && !pacienteDerivado.derivacion_pendiente;
+                
+                if (fueAceptado) {
+                    // ✅ Paciente derivado fue aceptado en hospital destino
+                    // Mostrar botón de confirmar egreso
+                    botones += `
+                        <div class="bg-orange-100 border-2 border-orange-500 rounded p-2">
+                            <div class="text-xs text-center text-orange-700 font-bold mb-2">
+                                🏥 Paciente derivado a:<br/>
+                                ${getHospitalNombre(pacienteDerivado.hospital_id)}
+                            </div>
+                            <button onclick="confirmarEgreso('${pacienteDerivado.id}')" 
+                                    class="w-full text-xs bg-green-600 text-white px-2 py-2 rounded hover:bg-green-700 font-bold">
+                                ✅ Confirmar Egreso
+                            </button>
+                            <p class="text-xs text-gray-600 text-center mt-1">
+                                Libera esta cama
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    // ⏳ Esperando aceptación en hospital destino
+                    botones += `
+                        <div class="text-xs text-center text-orange-700 font-semibold">
+                            ⏳ Esperando aceptación<br/>en hospital destino
+                        </div>
+                    `;
+                }
             }
             
             botones += '</div>';
             return botones;
         }
 
-        async function cargarPacientesEspera() {
-            const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes`);
-            const pacientes = await response.json();
-            
-            const enEspera = pacientes.filter(p => p.en_espera);
-            
-            const container = document.getElementById('pacientes-espera-container');
-            if (enEspera.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay pacientes en espera</p>';
-                return;
-            }
-            
-            container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    ${enEspera.map(p => `
-                        <div class="border rounded p-3 ${p.derivacion_pendiente ? 'bg-purple-50 border-purple-300' : ''}">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <p class="font-semibold">${p.nombre}</p>
-                                    ${p.derivacion_pendiente ? '<span class="text-xs bg-purple-600 text-white px-2 py-1 rounded">🏥 Derivado</span>' : ''}
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-600">Espera: ${p.tiempo_espera_min} min</p>
-                            ${p.es_embarazada ? '<span class="text-xs bg-pink-200 px-2 py-1 rounded mr-1">Embarazada</span>' : ''}
-                            ${p.es_adulto_mayor ? '<span class="text-xs bg-yellow-200 px-2 py-1 rounded">Adulto Mayor</span>' : ''}
-                            
-                            ${p.derivacion_pendiente ? `
-                                <div class="mt-3 space-y-2">
-                                    <p class="text-xs text-purple-700 font-medium">Motivo: ${p.motivo_derivacion || 'No especificado'}</p>
-                                    <div class="flex gap-2">
-                                        <button onclick="verDetallesPaciente('${p.id}')" 
-                                                class="flex-1 bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">
-                                            👁️ Ver
-                                        </button>
-                                        <button onclick="aceptarDerivacion('${p.id}')" 
-                                                class="flex-1 bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">
-                                            ✓ Aceptar
-                                        </button>
-                                        <button onclick="rechazarDerivacion('${p.id}')" 
-                                                class="flex-1 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
-                                            ✗ Rechazar
-                                        </button>
-                                    </div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
 
         // ============================================
         // FUNCIONES DE REEVALUACIÓN
@@ -1103,35 +1182,62 @@
             }
         }
 
-        async function rechazarDerivacion(pacienteId) {
-            const motivoRechazo = prompt('¿Por qué se rechaza esta derivación?\n\nIngrese el motivo:');
-            
-            if (!motivoRechazo || motivoRechazo.trim() === '') {
-                alert('⚠️ Debe ingresar un motivo para rechazar la derivación');
-                return;
-            }
-            
-            if (!confirm('¿Confirmar rechazo de derivación? El paciente volverá al hospital de origen.')) return;
-            
-            try {
-                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/rechazar-derivacion`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ motivo_rechazo: motivoRechazo })
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    alert('✅ Derivación rechazada. ' + result.mensaje);
-                    cargarDatos();
-                } else {
-                    const error = await response.json();
-                    mostrarError(error);
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
+async function rechazarDerivacion(pacienteId) {
+    const motivoRechazo = prompt('¿Por qué se rechaza esta derivación?\n\nIngrese el motivo:');
+    
+    // Validar el motivo de rechazo
+    if (!motivoRechazo || motivoRechazo.trim() === '') {
+        alert('⚠️ Debe ingresar un motivo para rechazar la derivación');
+        return;
+    }
+    
+    // Confirmación final
+    if (!confirm('¿Confirmar rechazo de derivación? El paciente volverá al hospital de origen.')) return;
+    
+    try {
+        // La URL de fetch estaba rota y separada
+        const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/rechazar-derivacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ motivo_rechazo: motivoRechazo })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert('✅ Derivación rechazada. ' + result.mensaje);
+            cargarDatos();
+        } else {
+            // Manejo de errores de la API (por ejemplo, 400, 500)
+            const error = await response.json();
+            mostrarError(error);
         }
+    } catch (error) {
+        // Manejo de errores de red o del fetch
+        alert('❌ Error: ' + error.message);
+    }
+}
+
+async function confirmarEgreso(pacienteId) {
+    if (!confirm('¿Confirmar el egreso del paciente del hospital?\n\nEsto liberará la cama para otro paciente.')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/confirmar-egreso`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            // Solución mejorada de tu línea original para manejar si 'mensaje' no existe
+            alert(`✅ ${result?.mensaje ?? 'Egreso confirmado.'}`); 
+            cargarDatos();
+        } else {
+            const error = await response.json();
+            mostrarError(error);
+        }
+    } catch (error) {
+        alert('❌ Error: ' + error.message);
+    }
+}
 
         async function sugerirAlta(camaId) {
             if (!confirm('¿Sugerir alta para este paciente? La cama quedará marcada como candidata para alta.')) return;

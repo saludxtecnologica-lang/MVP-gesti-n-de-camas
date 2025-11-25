@@ -627,28 +627,67 @@ def obtener_cama(
 
 @app.get("/hospitales/{hospital_id}/pacientes")
 def listar_pacientes(hospital_id: str, session: Session = Depends(get_session)):
+    """
+    Lista todos los pacientes de un hospital con información COMPLETA.
+    
+    ✅ CORRECCIÓN: Ahora incluye TODOS los campos necesarios para derivaciones
+    """
     pacientes = session.exec(select(Paciente).where(Paciente.hospital_id == hospital_id)).all()
     return [
         {
+            # Identificación
             "id": p.id,
             "nombre": p.nombre,
             "run": p.run,
+            
+            # Datos demográficos
+            "sexo": p.sexo.value,
             "edad": p.edad,
             "edad_categoria": p.edad_categoria.value,
-            "enfermedad": p.enfermedad.value,
-            "tiempo_espera_min": p.tiempo_espera_min,
-            "en_espera": p.en_espera,
-            "cama_id": p.cama_id,
-            "requiere_cambio_cama": p.requiere_cambio_cama,
-            "derivacion_pendiente": p.derivacion_pendiente,  
-            "hospital_origen_id": p.hospital_origen_id,  
-            "motivo_derivacion": p.motivo_derivacion,  
             "es_embarazada": p.es_embarazada,
-            "es_adulto_mayor": p.es_adulto_mayor
+            "es_adulto_mayor": p.es_adulto_mayor,
+            
+            # Condición clínica
+            "enfermedad": p.enfermedad.value,
+            "aislamiento": p.aislamiento.value,
+            "diagnostico": p.diagnostico,
+            "notas": p.notas,
+            
+            # Requerimientos y complejidad
+            "requerimientos": p.requerimientos,
+            "complejidad_requerida": p.complejidad_requerida.value,
+            "puntos_complejidad": p.puntos_complejidad,
+            
+            # Casos especiales
+            "caso_sociosanitario": p.caso_sociosanitario,
+            "espera_cardio": p.espera_cardio,
+            
+            # Estado de asignación
+            "en_espera": p.en_espera,
+            "tiempo_espera_min": p.tiempo_espera_min,
+            "cama_id": p.cama_id,
+            "cama_destino_id": p.cama_destino_id,
+            
+            # ✅ CAMPOS DE DERIVACIÓN (CRÍTICO)
+            "derivacion_pendiente": p.derivacion_pendiente,
+            "hospital_origen_id": p.hospital_origen_id,
+            "motivo_derivacion": p.motivo_derivacion,
+            "motivo_rechazo_derivacion": p.motivo_rechazo_derivacion,
+            "cama_origen_id": p.cama_origen_id,
+            "egreso_confirmado": p.egreso_confirmado,
+            
+            # Cambio de cama
+            "requiere_cambio_cama": getattr(p, 'requiere_cambio_cama', False),
+            "requiere_busqueda_cama": getattr(p, 'requiere_busqueda_cama', False),
+            "motivo_cambio_cama": getattr(p, 'motivo_cambio_cama', None),
+            
+            # Detalles adicionales
+            "motivo_monitorizacion": getattr(p, 'motivo_monitorizacion', None),
+            "signos_monitorizacion": getattr(p, 'signos_monitorizacion', None),
+            "detalle_procedimiento_invasivo": getattr(p, 'detalle_procedimiento_invasivo', None)
         }
         for p in pacientes
     ]
-
 
 @app.post("/hospitales/{hospital_id}/pacientes/ingresar")
 async def ingresar_paciente(
