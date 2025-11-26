@@ -1212,6 +1212,117 @@ async def reevaluar_paciente_completo(
 # ENDPOINTS - TRASLADOS
 # ============================================
 
+@app.post("/hospitales/{hospital_id}/pacientes/{paciente_id}/buscar-cama-manual")
+async def buscar_y_asignar_cama_automatica(
+    hospital_id: str,
+    paciente_id: str,
+    session: Session = Depends(get_session)
+):
+    """
+    ✅ CORREGIDO: Busca y asigna automáticamente una nueva cama para un paciente que requiere cambio.
+    """
+    from logic import asignar_cama, actualizar_sexo_sala, requiere_cambio_cama
+    
+    paciente = session.get(Paciente, paciente_id)
+    
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+    
+    if paciente.hospital_id != hospital_id:
+        raise HTTPException(status_code=400, detail="Paciente no pertenece al hospital")
+    
+    cama_actual = session.get(Cama, paciente.cama_id) if paciente.cama_id else None
+    
+    if not cama_actual:
+        raise HTTPException(status_code=400, detail="Paciente no tiene cama actual")
+    
+    # Verificar si requiere cambio de cama
+    query_todas = select(Cama).where(Cama.hospital_id == hospital_id)
+    todas_camas = session.exec(query_todas).all()
+    
+    requiere_cambio = requiere_cambio_cama(paciente, cama_actual, todas_camas)
+    
+    if not requiere_cambio and not getattr(paciente, 'requiere_cambio_cama', False):
+        raise HTTPException(
+            status_code=400,
+            detail="Este paciente no requiere cambio de cama"
+        )
+    
+    # Buscar camas disponibles
+    query_camas_disponibles = select(Cama).where(
+        Cama.hospital_id == hospital_id,
+        Cama.estado == EstadoCamaEnum.LIBRE
+    )
+    camas_disponibles = session.exec(query_camas_disponibles).all()
+    
+    if not camas_disponibles:
+        return {
+            "mensaje": "No hay camas disponibles para el traslado",
+            "paciente_id": paciente.id,
+            "exito": False,
+            "motivo": "Sin camas disponibles"
+        }
+    
+    # Asignar nueva cama automáticamente
+    nueva_cama = asignar_cama(paciente, camas_disponibles, todas_camas, session)
+    
+    if nueva_cama:
+        # Actualizar sexo de sala
+        actualizar_sexo_sala(nueva_cama, paciente, todas_camas, session)
+        
+        # Marcar cama actual como EN_TRASLADO (naranja)
+        cama_actual.estado = EstadoCamaEnum.EN_TRASLADO
+        session.add(cama_actual)
+        
+        # Marcar nueva cama como PENDIENTE_TRASLADO (amarillo)
+        nueva_cama.estado = EstadoCamaEnum.PENDIENTE_TRASLADO
+        nueva_cama.paciente_id = paciente.id
+        session.add(nueva_cama)
+        
+        # ✅ CRÍTICO: Guardar AMBAS referencias (origen Y destino)
+        paciente.cama_origen_id = cama_actual.id  # ⬅️ ESTA LÍNEA ES ESENCIAL
+        paciente.cama_destino_id = nueva_cama.id
+        
+        # Limpiar flags
+        if hasattr(paciente, 'requiere_cambio_cama'):
+            paciente.requiere_cambio_cama = False
+        if hasattr(paciente, 'motivo_cambio_cama'):
+            paciente.motivo_cambio_cama = None
+            
+        session.add(paciente)
+        session.commit()
+        session.refresh(nueva_cama)
+        
+        await notificar_cambio(
+            hospital_id=hospital_id,
+            evento="cama_asignada_automaticamente",
+            session=session,
+            detalles={
+                "paciente_id": paciente.id,
+                "paciente_nombre": paciente.nombre,
+                "cama_origen_id": cama_actual.id,
+                "cama_destino_id": nueva_cama.id
+            }
+        )
+        
+        return {
+            "mensaje": "Cama encontrada y asignada exitosamente. Proceda con el traslado.",
+            "paciente_id": paciente.id,
+            "exito": True,
+            "cama_origen_id": cama_actual.id,
+            "cama_destino_id": nueva_cama.id,
+            "servicio_destino": nueva_cama.servicio.value,
+            "sala_destino": nueva_cama.sala
+        }
+    else:
+        return {
+            "mensaje": "No se encontró cama adecuada para los requerimientos del paciente",
+            "paciente_id": paciente.id,
+            "exito": False,
+            "motivo": "Sin cama compatible disponible"
+        }
+    
+
 @app.post("/hospitales/{hospital_id}/pacientes/{paciente_id}/confirmar-traslado")
 async def confirmar_traslado_paciente(
     hospital_id: str,
