@@ -49,7 +49,7 @@
 
     <div class="container mx-auto px-4 py-8">
         <div id="estadisticas-rapidas" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-        </div>
+            </div>
 
         <div class="bg-white rounded-lg shadow p-4 mb-6">
             <div class="flex justify-between items-center">
@@ -66,12 +66,12 @@
         </div>
 
         <div id="servicios-container" class="space-y-6">
-        </div>
+            </div>
 
         <div class="bg-white rounded-lg shadow p-6 mt-8">
             <h2 class="text-xl font-semibold mb-4">👥 Pacientes en Espera</h2>
             <div id="pacientes-espera-container">
-            </div>
+                </div>
             <button onclick="asignarCamasAutomaticamente()" 
                     class="mt-4 w-full bg-green-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-green-700">
                 🛏️ Asignar Camas Automáticamente
@@ -168,7 +168,7 @@
                             <option value="gotitas">Gotitas (puede compartir sala)</option>
                             <option value="aereo">Aéreo (cama individual)</option>
                             <option value="ambiente_protegido">Ambiente protegido (cama individual)</option>
-                            <option value="aislamiento_especial" title="C. difficile, KPC, otros">Aislamiento especial (cama individual) ℹ️</option>
+                            <option value="aislamiento_especial" title="C. difficile, KPC, otros">Aislamiento especial (cama individual) ℹ</option>
                         </select>
                     </div>
 
@@ -197,7 +197,7 @@
                         <div class="border rounded p-4 space-y-2 max-h-96 overflow-y-auto">
                             <p class="text-xs text-gray-600 mb-2 font-semibold">
                                 Requerimientos que NO definen cama ni necesidad de hospitalización:
-                                <span class="cursor-help ml-1 text-blue-600" title="Prestaciones por Hodom, Hosdom o CESFAM">ℹ️</span>
+                                <span class="cursor-help ml-1 text-blue-600" title="Prestaciones por Hodom, Hosdom o CESFAM">ℹ</span>
                             </p>
                             <div class="grid grid-cols-2 gap-2 bg-gray-50 p-2 rounded mb-4">
                                 <label class="flex items-center space-x-2 text-sm">
@@ -223,7 +223,7 @@
                                 <label class="flex items-center space-x-2 text-sm">
                                     <input type="checkbox" name="requerimientos" value="tratamiento_endovenoso" class="rounded">
                                     <span>Tratamiento endovenoso por 3 veces o más
-                                        <span class="cursor-help ml-1 text-blue-600" title="Independiente del tipo de medicamentos">ℹ️</span>
+                                        <span class="cursor-help ml-1 text-blue-600" title="Independiente del tipo de medicamentos">ℹ</span>
                                     </span>
                                 </label>
                                 <label class="flex items-center space-x-2 text-sm">
@@ -245,7 +245,7 @@
                                 <label class="flex items-center space-x-2 text-sm">
                                     <input type="checkbox" name="requerimientos" value="curaciones_alta_complejidad" class="rounded">
                                     <span>Curaciones de alta complejidad
-                                        <span class="cursor-help ml-1 text-blue-600" title="Incluye: VAC, gran quemados, etc.">ℹ️</span>
+                                        <span class="cursor-help ml-1 text-blue-600" title="Incluye: VAC, gran quemados, etc.">ℹ</span>
                                     </span>
                                 </label>
                                 <label class="flex items-center space-x-2 text-sm">
@@ -275,7 +275,7 @@
                                 <label class="flex items-center space-x-2 text-sm">
                                     <input type="checkbox" name="requerimientos" value="monitorizacion_continua" class="rounded">
                                     <span>Monitorización continua
-                                        <span class="cursor-help ml-1 text-blue-600" title="Controles de signos vitales cada 4 horas o menos">ℹ️</span>
+                                        <span class="cursor-help ml-1 text-blue-600" title="Controles de signos vitales cada 4 horas o menos">ℹ</span>
                                     </span>
                                 </label>
                                 <label class="flex items-center space-x-2 text-sm">
@@ -343,7 +343,7 @@
                     <div>
                         <label class="block text-sm font-medium mb-1">
                             Notas adicionales
-                            <span class="text-xs text-gray-500 ml-1" title="Información adicional relevante sobre el paciente">ℹ️</span>
+                            <span class="text-xs text-gray-500 ml-1" title="Información adicional relevante sobre el paciente">ℹ</span>
                         </label>
                         <textarea id="notas" name="notas" rows="2" 
                                   class="w-full border rounded px-3 py-2" 
@@ -360,7 +360,7 @@
                                 <label class="block text-sm font-medium mb-1">Hospital Destino *</label>
                                 <select id="hospital_destino" name="hospital_destino" class="w-full border rounded px-3 py-2">
                                     <option value="">Seleccionar hospital...</option>
-                                </select>
+                                    </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">Motivo de Derivación *</label>
@@ -390,30 +390,31 @@
         // CONFIGURACIÓN
         // ============================================
         
-        let HOSPITAL_ID = 'PMONTT';
+        let HOSPITAL_ID = 'PMONTT';  // Hospital por defecto
         const API_BASE = '';
-        let SERVICIO_FILTRO = '';
+        let SERVICIO_FILTRO = '';  // Filtro de servicio actual
 
         function cambiarHospital() {
             HOSPITAL_ID = document.getElementById('hospital-selector').value;
             console.log('Hospital cambiado a:', HOSPITAL_ID);
             
+            // Mostrar/ocultar filtro de servicio solo para Puerto Montt
             const filtroServicioContainer = document.getElementById('filtro-servicio-container');
             if (HOSPITAL_ID === 'PMONTT') {
                 filtroServicioContainer.style.display = 'flex';
             } else {
                 filtroServicioContainer.style.display = 'none';
-                SERVICIO_FILTRO = '';
+                SERVICIO_FILTRO = ''; // Resetear filtro
                 document.getElementById('servicio-selector').value = '';
             }
             
-            cargarDatos();
+            cargarDatos();  // Recargar datos del nuevo hospital
         }
         
         function filtrarPorServicio() {
             SERVICIO_FILTRO = document.getElementById('servicio-selector').value;
             console.log('Servicio filtrado:', SERVICIO_FILTRO || 'Todos');
-            cargarDatos();
+            cargarDatos();  // Recargar datos con el filtro
         }
         
         function getHospitalNombre(hospitalId) {
@@ -459,6 +460,7 @@
             
             if (checkbox.checked) {
                 camposDiv.classList.remove('hidden');
+                // Marcar campos como requeridos
                 document.getElementById('hospital_destino').required = true;
                 document.getElementById('motivo_derivacion').required = true;
             } else {
@@ -469,6 +471,7 @@
         }
 
         function toggleEmbarazada() {
+            // Mostrar checkbox de embarazada solo si el sexo es mujer
             const sexoMujer = document.getElementById('sexo_mujer');
             const divEmbarazada = document.getElementById('div-embarazada');
             
@@ -476,11 +479,13 @@
                 divEmbarazada.classList.remove('hidden');
             } else {
                 divEmbarazada.classList.add('hidden');
+                // Desmarcar el checkbox si se oculta
                 document.getElementById('es_embarazada').checked = false;
             }
         }
 
         function toggleCamposProcedimientoInvasivo() {
+            // Mostrar campo de detalle si se selecciona procedimiento_invasivo_medico
             const procedimientoCheckbox = document.querySelector('input[value="procedimiento_invasivo_medico"]');
             const camposDiv = document.getElementById('campos-procedimiento-invasivo');
             
@@ -494,11 +499,13 @@
         }
 
         function toggleCamposMonitorizacion() {
+            // Obtener todos los checkboxes de requerimientos seleccionados
             const checkboxes = document.querySelectorAll('input[name="requerimientos"]:checked');
             const monitorizacionCheckbox = document.querySelector('input[value="monitorizacion_continua"]');
             const observacionCheckbox = document.querySelector('input[value="observacion_riesgo_compromiso"]');
             const camposDiv = document.getElementById('campos-monitorizacion');
             
+            // Definir requerimientos UTI (3 puntos)
             const requerimientosUTI = [
                 'drogas_vasoactivas',
                 'monitorizacion_continua',
@@ -509,6 +516,7 @@
                 'bic_insulina'
             ];
             
+            // Definir requerimientos de baja complejidad
             const requerimientosBaja = [
                 'tratamiento_endovenoso',
                 'dolor_intenso',
@@ -521,6 +529,7 @@
                 'observacion_riesgo_compromiso'
             ];
             
+            // Verificar si monitorizacion_continua u observacion_riesgo_compromiso están seleccionadas
             const monCheckboxChecked = monitorizacionCheckbox && monitorizacionCheckbox.checked;
             const obsCheckboxChecked = observacionCheckbox && observacionCheckbox.checked;
             
@@ -531,16 +540,22 @@
                 return;
             }
             
+            // Obtener los valores seleccionados
             const valoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
             
+            // Filtrar solo requerimientos UTI seleccionados
             const requerimientosUTISeleccionados = valoresSeleccionados.filter(val => 
                 requerimientosUTI.includes(val)
             );
             
+            // Filtrar solo requerimientos de baja complejidad seleccionados
             const requerimientosBajaSeleccionados = valoresSeleccionados.filter(val => 
                 requerimientosBaja.includes(val)
             );
             
+            // Mostrar campos si:
+            // 1. monitorizacion_continua es el ÚNICO requerimiento UTI seleccionado, O
+            // 2. observacion_riesgo_compromiso es el ÚNICO requerimiento de baja seleccionado
             const soloMonitorizacion = requerimientosUTISeleccionados.length === 1 && 
                                       requerimientosUTISeleccionados[0] === 'monitorizacion_continua';
             const soloObservacion = requerimientosBajaSeleccionados.length === 1 && 
@@ -562,7 +577,7 @@
             select.innerHTML = '<option value="">Seleccionar hospital...</option>';
             
             HOSPITALES.forEach(hospital => {
-                if (hospital.id !== HOSPITAL_ID) {
+                if (hospital.id !== HOSPITAL_ID) {  // No incluir el hospital actual
                     const option = document.createElement('option');
                     option.value = hospital.id;
                     option.textContent = hospital.nombre;
@@ -620,14 +635,18 @@
             const responseCamas = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/camas`);
             let camas = await responseCamas.json();
             
+            // Cargar todos los pacientes (necesitamos ver pacientes derivados desde este hospital)
             const responsePacientes = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes`);
             const pacientesDelHospital = await responsePacientes.json();
             
+            // Crear mapa de pacientes por ID para agregar información adicional a las camas
             const pacientesPorId = {};
             pacientesDelHospital.forEach(p => {
                 pacientesPorId[p.id] = p;
             });
             
+            // Buscar pacientes derivados DESDE este hospital (hospital_origen_id === HOSPITAL_ID)
+            // Para esto necesitamos buscar en todos los hospitales
             let pacientesDerivadosDesdeAqui = [];
             const hospitales = ['PMONTT', 'CALBUCO', 'LLANHUE'];
             for (const hospitalId of hospitales) {
@@ -643,20 +662,24 @@
                 }
             }
             
+            // Agregar información de pacientes derivados a las camas
             camas.forEach(cama => {
                 const pacienteDerivado = pacientesDerivadosDesdeAqui.find(p => p.cama_origen_id === cama.id);
                 if (pacienteDerivado) {
                     cama.paciente_derivado = pacienteDerivado;
                 }
+                // Agregar información completa del paciente si está ocupada
                 if (cama.paciente_id && pacientesPorId[cama.paciente_id]) {
                     cama.paciente_info = pacientesPorId[cama.paciente_id];
                 }
             });
             
+            // Aplicar filtro de servicio si está activo
             if (SERVICIO_FILTRO) {
                 camas = camas.filter(cama => cama.servicio === SERVICIO_FILTRO);
             }
             
+            // Agrupar por servicio y luego por sala
             const porServicio = {};
             camas.forEach(cama => {
                 if (!porServicio[cama.servicio]) {
@@ -668,17 +691,21 @@
                 porServicio[cama.servicio][cama.sala].push(cama);
             });
             
+            // Renderizar
             const container = document.getElementById('servicios-container');
             container.innerHTML = Object.entries(porServicio).map(([servicio, salas]) => {
                 const servicioNombre = servicio.toUpperCase().replace('_', ' ');
                 
+                // Renderizar salas
                 const salasHtml = Object.entries(salas).map(([nombreSala, camasSala]) => {
+                    // Obtener info de la sala
                     const infoSala = camasSala[0];
                     const esSalaCompartida = infoSala.es_sala_compartida || false;
                     const sexoSala = infoSala.sexo_sala;
                     const pacientesEnSala = infoSala.pacientes_en_sala || 0;
                     const capacidadSala = infoSala.capacidad_sala || 1;
                     
+                    // Icono de sexo
                     let sexoIcon = '';
                     if (esSalaCompartida && sexoSala) {
                         sexoIcon = sexoSala === 'hombre' ? 
@@ -686,6 +713,7 @@
                             '<span class="text-pink-600 font-bold">♀</span>';
                     }
                     
+                    // Header de sala
                     const salaHeader = esSalaCompartida ? `
                         <div class="col-span-full bg-gray-100 p-2 rounded-lg mb-2 flex justify-between items-center">
                             <div class="flex items-center gap-2">
@@ -728,10 +756,13 @@
             
             const color = colores[cama.estado] || 'bg-gray-300';
             
+            // Verificar si el paciente tiene requerimientos especiales
             const tieneEspecial = cama.paciente_info && 
                                    (cama.paciente_info.caso_sociosanitario || 
                                     cama.paciente_info.espera_cardio);
             
+            // Si hay paciente, mostrar nombre arriba y número de cama abajo
+            // Si no hay paciente, mostrar solo número de cama
             let contenidoCama = '';
             if (cama.estado !== 'libre' && cama.paciente_nombre) {
                 contenidoCama = `
@@ -756,111 +787,8 @@
             `;
         }
 
-        async function cargarPacientesEspera() {
-    const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes`);
-    let pacientes = await response.json();
-    
-    console.log(`\n📊 PACIENTES EN ESPERA - Debug:`);
-    console.log(`Total pacientes del hospital: ${pacientes.length}`);
-    
-    // Filtrar solo pacientes en espera (incluye derivaciones pendientes)
-    const enEspera = pacientes.filter(p => {
-        // Un paciente está en espera si:
-        // 1. No tiene cama asignada definitivamente (cama_id == null)
-        // 2. Está marcado como en_espera
-        // 3. O tiene derivación pendiente
-        const sinCama = !p.cama_id;
-        const marcadoEspera = p.en_espera;
-        const derivacionPendiente = p.derivacion_pendiente;
-        
-        const estaEnEspera = sinCama && (marcadoEspera || derivacionPendiente);
-        
-        if (estaEnEspera) {
-            console.log(`  ✅ Paciente en espera: ${p.nombre}`);
-            console.log(`     - en_espera: ${p.en_espera}`);
-            console.log(`     - derivacion_pendiente: ${p.derivacion_pendiente}`);
-            console.log(`     - hospital_origen_id: ${p.hospital_origen_id}`);
-            console.log(`     - cama_id: ${p.cama_id}`);
-        }
-        
-        return estaEnEspera;
-    });
-    
-    console.log(`Pacientes en espera filtrados: ${enEspera.length}\n`);
-    
-    const container = document.getElementById('pacientes-espera-container');
-    
-    if (enEspera.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay pacientes en espera</p>';
-        return;
-    }
-    
-    container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            ${enEspera.map(p => {
-                // Determinar si es derivación
-                const esDerivaciónPendiente = p.derivacion_pendiente && p.hospital_origen_id;
-                
-                return `
-                    <div class="border rounded p-3 ${esDerivaciónPendiente ? 'bg-purple-50 border-purple-300' : ''}">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <p class="font-semibold">${p.nombre}</p>
-                                <p class="text-xs text-gray-600">${p.sexo} • ${p.edad_categoria}</p>
-                                ${esDerivaciónPendiente ? '<span class="text-xs bg-purple-600 text-white px-2 py-1 rounded inline-block mt-1">🏥 Derivado</span>' : ''}
-                            </div>
-                        </div>
-                        
-                        <p class="text-sm text-gray-600">Enfermedad: ${p.enfermedad}</p>
-                        ${p.aislamiento !== 'ninguno' ? `<p class="text-sm text-gray-600">Aislamiento: ${p.aislamiento}</p>` : ''}
-                        <p class="text-sm text-gray-600">Espera: ${p.tiempo_espera_min} min</p>
-                        
-                        ${p.es_embarazada ? '<span class="text-xs bg-pink-200 px-2 py-1 rounded mr-1">Embarazada</span>' : ''}
-                        ${p.es_adulto_mayor ? '<span class="text-xs bg-yellow-200 px-2 py-1 rounded">Adulto Mayor</span>' : ''}
-                        ${p.caso_sociosanitario ? '<span class="text-xs bg-purple-200 px-2 py-1 rounded mr-1">Sociosanitario</span>' : ''}
-                        ${p.espera_cardio ? '<span class="text-xs bg-red-200 px-2 py-1 rounded">Espera Cardio</span>' : ''}
-                        
-                        ${esDerivaciónPendiente ? `
-                            <div class="mt-3 pt-3 border-t border-purple-200">
-                                <p class="text-xs text-purple-700 font-medium mb-1">
-                                    Desde: ${getHospitalNombre(p.hospital_origen_id)}
-                                </p>
-                                ${p.motivo_derivacion ? `
-                                    <p class="text-xs text-gray-600 mb-2">
-                                        Motivo: ${p.motivo_derivacion}
-                                    </p>
-                                ` : ''}
-                                <div class="flex gap-2">
-                                    <button onclick="verDetallesPaciente('${p.id}')" 
-                                            class="flex-1 bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">
-                                        👁️ Ver
-                                    </button>
-                                    <button onclick="aceptarDerivacion('${p.id}')" 
-                                            class="flex-1 bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">
-                                        ✓ Aceptar
-                                    </button>
-                                    <button onclick="rechazarDerivacion('${p.id}')" 
-                                            class="flex-1 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
-                                        ✗ Rechazar
-                                    </button>
-                                </div>
-                            </div>
-                        ` : `
-                            <div class="mt-2">
-                                <button onclick="verDetallesPaciente('${p.id}')" 
-                                        class="w-full bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">
-                                    👁️ Ver Detalles
-                                </button>
-                            </div>
-                        `}
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    `;
-}
-
         function renderBotonesCama(cama) {
+            // Si no hay paciente, no mostrar botones
             if (cama.estado === 'libre') {
                 return '';
             }
@@ -871,10 +799,13 @@
             }
             
             const esCasoEspecial = paciente.caso_sociosanitario || paciente.espera_cardio;
+            
+            // ✅ NUEVO: Verificar si requiere cambio de cama
             const requiereCambio = paciente.requiere_cambio_cama || false;
             
             let botones = '<div class="mt-2 space-y-1">';
             
+            // ✅ MODIFICADO: Mostrar alerta si requiere cambio con botón de asignación automática
             if (cama.estado === 'ocupada' && requiereCambio) {
                 botones += `
                     <div class="bg-yellow-100 border-2 border-yellow-500 rounded p-2 mb-2">
@@ -889,9 +820,10 @@
                 `;
             }
             
+            // Botones normales
             if (cama.estado === 'ocupada') {
                 botones += `
-                    <button onclick="abrirFormularioReevaluacion('${paciente.id}')" 
+                    <button onclick="reevaluarPaciente('${paciente.id}')" 
                             class="w-full text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
                         🔄 Reevaluar
                     </button>
@@ -934,146 +866,280 @@
             }
             
             if (cama.estado === 'en_traslado') {
-                // Verificar si hay paciente derivado que ya fue aceptado
-                const pacienteDerivado = cama.paciente_derivado;
-                const fueAceptado = pacienteDerivado && !pacienteDerivado.derivacion_pendiente;
-                
-                if (fueAceptado) {
-                    // ✅ Paciente derivado fue aceptado en hospital destino
-                    // Mostrar botón de confirmar egreso
-                    botones += `
-                        <div class="bg-orange-100 border-2 border-orange-500 rounded p-2">
-                            <div class="text-xs text-center text-orange-700 font-bold mb-2">
-                                🏥 Paciente derivado a:<br/>
-                                ${getHospitalNombre(pacienteDerivado.hospital_id)}
-                            </div>
-                            <button onclick="confirmarEgreso('${pacienteDerivado.id}')" 
-                                    class="w-full text-xs bg-green-600 text-white px-2 py-2 rounded hover:bg-green-700 font-bold">
-                                ✅ Confirmar Egreso
-                            </button>
-                            <p class="text-xs text-gray-600 text-center mt-1">
-                                Libera esta cama
-                            </p>
-                        </div>
-                    `;
-                } else {
-                    // ⏳ Esperando aceptación en hospital destino
-                    botones += `
-                        <div class="text-xs text-center text-orange-700 font-semibold">
-                            ⏳ Esperando aceptación<br/>en hospital destino
-                        </div>
-                    `;
-                }
+            //: Siempre mostrar botón Cancelar Traslado
+            botones += `
+                <button onclick="cancelarTrasladoDesdeOrigen('${paciente.id}')" 
+                        class="w-full text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 mb-1">
+                    ❌ Cancelar Traslado
+                </button>
+            `;
+            
+            // Si es derivación a otro hospital, mostrar Confirmar Egreso
+            if (cama.paciente_derivado) {
+                botones += `
+                    <button onclick="confirmarEgreso('${paciente.id}')" 
+                            class="w-full text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
+                        ✅ Confirmar Egreso
+                    </button>
+                `;
+            } else {
+                botones += `
+                    <div class="text-xs text-center text-orange-700 font-semibold">
+                        ⏳ Esperando confirmación
+                    </div>
+                `;
             }
+        }
             
             botones += '</div>';
             return botones;
         }
 
+        async function cargarPacientesEspera() {
+            const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes`);
+            const pacientes = await response.json();
+            
+            const enEspera = pacientes.filter(p => p.en_espera || p.derivacion_pendiente);
+            
+            const container = document.getElementById('pacientes-espera-container');
+            if (enEspera.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay pacientes en espera</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    ${enEspera.map(p => `
+                        <div class="border rounded p-3 ${p.derivacion_pendiente ? 'bg-purple-50 border-purple-300' : ''}">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <p class="font-semibold">${p.nombre}</p>
+                                    ${p.derivacion_pendiente ? '<span class="text-xs bg-purple-600 text-white px-2 py-1 rounded">🏥 Derivado</span>' : ''}
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600">Espera: ${p.tiempo_espera_min} min</p>
+                            ${p.es_embarazada ? '<span class="text-xs bg-pink-200 px-2 py-1 rounded mr-1">Embarazada</span>' : ''}
+                            ${p.es_adulto_mayor ? '<span class="text-xs bg-yellow-200 px-2 py-1 rounded">Adulto Mayor</span>' : ''}
+                            
+                            ${p.derivacion_pendiente ? `
+                                <div class="mt-3 space-y-2">
+                                    <p class="text-xs text-purple-700 font-medium">Motivo: ${p.motivo_derivacion || 'No especificado'}</p>
+                                    <div class="flex gap-2">
+                                        <button onclick="verDetallesPaciente('${p.id}')" 
+                                                class="flex-1 bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">
+                                            👁️ Ver
+                                        </button>
+                                        <button onclick="aceptarDerivacion('${p.id}')" 
+                                                class="flex-1 bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">
+                                            ✔ Aceptar
+                                        </button>
+                                        <button onclick="rechazarDerivacion('${p.id}')" 
+                                                class="flex-1 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                                            ✗ Rechazar
+                                        </button>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
 
         // ============================================
-        // FUNCIONES DE REEVALUACIÓN
+        // ACCIONES DE CAMAS
         // ============================================
 
-        async function abrirFormularioReevaluacion(pacienteId) {
+        async function confirmarTraslado(pacienteId) {
+            if (!confirm('¿Confirmar que el paciente llegó a su cama?')) return;
+            
             try {
-                console.log('🔄 Abriendo formulario de reevaluación para:', pacienteId);
-                
-                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}`);
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar los datos del paciente');
-                }
-                
-                const paciente = await response.json();
-                console.log('Datos del paciente:', paciente);
-                
-                document.getElementById('modal-title').textContent = '🔄 Reevaluar Paciente';
-                document.getElementById('es-reevaluacion').value = 'true';
-                document.getElementById('paciente-id').value = paciente.id;
-                
-                document.getElementById('nombre').value = paciente.nombre;
-                document.getElementById('nombre').disabled = true;
-                
-                document.getElementById('run').value = paciente.run;
-                document.getElementById('run').disabled = true;
-                
-                if (paciente.sexo === 'hombre') {
-                    document.getElementById('sexo_hombre').checked = true;
-                } else {
-                    document.getElementById('sexo_mujer').checked = true;
-                }
-                document.getElementById('sexo_hombre').disabled = true;
-                document.getElementById('sexo_mujer').disabled = true;
-                
-                document.getElementById('edad').value = paciente.edad;
-                document.getElementById('edad').disabled = true;
-                
-                if (document.getElementById('es_embarazada')) {
-                    document.getElementById('es_embarazada').checked = paciente.es_embarazada || false;
-                }
-                
-                if (document.getElementById('diagnostico')) {
-                    document.getElementById('diagnostico').value = paciente.diagnostico || '';
-                }
-                
-                document.getElementById('enfermedad').value = paciente.enfermedad;
-                document.getElementById('aislamiento').value = paciente.aislamiento;
-                
-                if (document.getElementById('caso_sociosanitario')) {
-                    document.getElementById('caso_sociosanitario').checked = paciente.caso_sociosanitario || false;
-                }
-                if (document.getElementById('espera_cardio')) {
-                    document.getElementById('espera_cardio').checked = paciente.espera_cardio || false;
-                }
-                
-                document.querySelectorAll('input[name="requerimientos"]').forEach(checkbox => {
-                    checkbox.checked = false;
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/confirmar-traslado`, {
+                    method: 'POST'
                 });
-                if (paciente.requerimientos && Array.isArray(paciente.requerimientos)) {
-                    paciente.requerimientos.forEach(req => {
-                        const checkbox = document.querySelector(`input[name="requerimientos"][value="${req}"]`);
-                        if (checkbox) {
-                            checkbox.checked = true;
-                        }
-                    });
-                }
                 
-                if (document.getElementById('motivo_monitorizacion')) {
-                    document.getElementById('motivo_monitorizacion').value = paciente.motivo_monitorizacion || '';
+                if (response.ok) {
+                    alert('✅ Traslado confirmado');
+                    cargarDatos();
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
                 }
-                if (document.getElementById('signos_monitorizacion')) {
-                    document.getElementById('signos_monitorizacion').value = paciente.signos_monitorizacion || '';
-                }
-                if (document.getElementById('notas')) {
-                    document.getElementById('notas').value = paciente.notas || '';
-                }
-                if (document.getElementById('detalle_procedimiento_invasivo')) {
-                    document.getElementById('detalle_procedimiento_invasivo').value = paciente.detalle_procedimiento_invasivo || '';
-                }
-                
-                const seccionDerivacion = document.getElementById('seccion-derivacion');
-                if (seccionDerivacion) {
-                    seccionDerivacion.style.display = 'block';
-                }
-                
-                const derivacionCheckbox = document.getElementById('derivar-paciente');
-                if (derivacionCheckbox) {
-                    derivacionCheckbox.checked = false;
-                    toggleDerivacion();
-                }
-                
-                cargarHospitalesEnSelector();
-                openModal('modal-ingresar');
-                
             } catch (error) {
-                console.error('Error al abrir formulario de reevaluación:', error);
-                alert('❌ Error al cargar datos del paciente: ' + error.message);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+
+        async function aprobarTraslado(pacienteId) {
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/aprobar-traslado`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.exito) {
+                        alert('✅ Búsqueda de cama aprobada e iniciada');
+                        cargarDatos();
+                    } else {
+                        alert('⚠️ ' + data.mensaje);
+                        cargarDatos();
+                    }
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function rechazarSolicitudTraslado(pacienteId) {
+            if (!confirm('¿Cancelar la solicitud de cambio de cama?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/rechazar-traslado`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Solicitud cancelada');
+                    cargarDatos();
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function cancelarTraslado(pacienteId) {
+            if (!confirm('¿Cancelar el traslado? El paciente volverá a lista de espera o a su cama anterior.')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/cancelar-traslado`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Traslado cancelado');
+                    cargarDatos();
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
             }
         }
 
         // ============================================
-        // RESTO DE FUNCIONES (igual que antes)
+        // FUNCIONES DE TRASLADO ENTRE CAMAS
         // ============================================
+
+        async function aceptarTraslado(camaId) {
+            if (!confirm('¿Confirmar que el paciente llegó a esta cama?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/camas/${camaId}/completar-traslado`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Traslado completado exitosamente');
+                    cargarDatos();
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+                async function rechazarTraslado(camaId) {
+                    if (!confirm('¿Rechazar este traslado? La cama quedará libre y el paciente volverá a su cama anterior.')) return;
+                    
+                    try {
+                        // Primero obtenemos la información de la cama para saber qué paciente está en traslado
+                        const camasResponse = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/camas`);
+                        const camas = await camasResponse.json();
+                        const cama = camas.find(c => c.id === camaId);
+                        
+                        if (!cama || !cama.paciente_id) {
+                            alert('❌ No se encontró el paciente en esta cama');
+                            return;
+                        }
+                        
+                        // Cancelar el traslado usando el paciente_id
+                        const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${cama.paciente_id}/cancelar-traslado`, {
+                            method: 'POST'
+                        });
+                        
+                        if (response.ok) {
+                            alert('✅ Traslado rechazado. El paciente vuelve a su cama anterior.');
+                            cargarDatos();
+                        } else {
+                            const error = await response.json();
+                            mostrarError(error);
+                        }
+                    } catch (error) {
+                        alert('❌ Error: ' + error.message);
+                    }
+                }
+
+                async function cancelarTrasladoDesdeOrigen(pacienteId) {
+            if (!confirm('¿Cancelar el traslado? El paciente permanecerá en esta cama y la cama destino se liberará.')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/cancelar-traslado`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Traslado cancelado. El paciente permanece en su cama actual.');
+                    cargarDatos();
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // ✅ MODIFICADO: Asignación automática de cama
+        // ============================================
+        
+        async function manejarCambioCama(pacienteId) {
+            if (!confirm('¿Buscar y asignar nueva cama automáticamente para este paciente?')) return;
+            
+            try {
+                // Llamar directamente al endpoint de asignación automática
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/buscar-cama-manual`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.exito) {
+                        alert(`✅ ${result.mensaje}\n\nCama destino: ${result.cama_destino_id}\nServicio: ${result.servicio_destino}\nSala: ${result.sala_destino}`);
+                        cargarDatos();
+                    } else {
+                        alert(`⚠️ ${result.mensaje}`);
+                        cargarDatos();
+                    }
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
 
         async function verDetallesPaciente(pacienteId) {
             try {
@@ -1141,6 +1207,38 @@
                                     </div>
                                 </div>
                             ` : ''}
+                            ${paciente.notas ? `
+                                <div class="border-t pt-3 mt-3">
+                                    <strong>Notas 
+                                        <span class="cursor-help" title="${paciente.notas}">ℹ</span>:
+                                    </strong>
+                                    <p class="text-sm mt-1 text-gray-600">${paciente.notas}</p>
+                                </div>
+                            ` : ''}
+                            ${paciente.motivo_monitorizacion ? `
+                                <div class="border-t pt-3 mt-3 bg-blue-50 p-2 rounded">
+                                    <strong class="text-blue-800">Detalles de Monitorización:</strong>
+                                    <p class="text-sm mt-1"><strong>Motivo:</strong> ${paciente.motivo_monitorizacion}</p>
+                                    ${paciente.signos_monitorizacion ? `<p class="text-sm mt-1"><strong>Signos/Síntomas:</strong> ${paciente.signos_monitorizacion}</p>` : ''}
+                                </div>
+                            ` : ''}
+                            ${paciente.derivacion_pendiente || paciente.motivo_derivacion || paciente.hospital_origen_id ? `
+                                <div class="border-t pt-3 mt-3">
+                                    <strong class="text-purple-600">🏥 Derivación:</strong>
+                                    ${paciente.hospital_origen_id ? `
+                                        <p class="text-sm mt-1"><strong>Desde:</strong> ${getHospitalNombre(paciente.hospital_origen_id)}</p>
+                                    ` : ''}
+                                    ${paciente.motivo_derivacion ? `
+                                        <p class="text-sm mt-1"><strong>Motivo:</strong> ${paciente.motivo_derivacion}</p>
+                                    ` : ''}
+                                    ${paciente.motivo_rechazo_derivacion ? `
+                                        <p class="text-sm mt-1 text-red-600"><strong>⚠️ Rechazado:</strong> ${paciente.motivo_rechazo_derivacion}</p>
+                                    ` : ''}
+                                    ${paciente.derivacion_pendiente ? `
+                                        <p class="text-xs mt-2 text-gray-500 italic">Estado: Pendiente de aceptación</p>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
                             <div class="border-t pt-3 mt-3">
                                 <strong>Requerimientos Clínicos:</strong>
                                 <ul class="list-disc ml-5 mt-2 text-sm">${requerimientosHTML}</ul>
@@ -1158,6 +1256,127 @@
                 
             } catch (error) {
                 alert('❌ Error: ' + error.message);
+            }
+        }
+
+        
+        // ✅ NUEVA FUNCIÓN: Abrir formulario de reevaluación
+        async function abrirFormularioReevaluacion(pacienteId) {
+            try {
+                console.log('🔄 Abriendo formulario de reevaluación para:', pacienteId);
+                
+                // Obtener datos del paciente
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}`);
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar los datos del paciente');
+                }
+                
+                const paciente = await response.json();
+                console.log('Datos del paciente:', paciente);
+                
+                // Configurar el modal en modo reevaluación
+                document.getElementById('modal-title').textContent = '🔄 Reevaluar Paciente';
+                document.getElementById('es-reevaluacion').value = 'true';
+                document.getElementById('paciente-id').value = paciente.id;
+                
+                // Llenar el formulario con los datos actuales
+                document.getElementById('nombre').value = paciente.nombre;
+                document.getElementById('nombre').disabled = true; // No editable en reevaluación
+                
+                document.getElementById('run').value = paciente.run;
+                document.getElementById('run').disabled = true; // No editable en reevaluación
+                
+                // Sexo
+                if (paciente.sexo === 'hombre') {
+                    document.getElementById('sexo_hombre').checked = true;
+                } else {
+                    document.getElementById('sexo_mujer').checked = true;
+                }
+                document.getElementById('sexo_hombre').disabled = true;
+                document.getElementById('sexo_mujer').disabled = true;
+                
+                // Edad
+                document.getElementById('edad').value = paciente.edad;
+                document.getElementById('edad').disabled = true;
+                
+                // Embarazada (si aplica)
+                if (document.getElementById('es_embarazada')) {
+                    document.getElementById('es_embarazada').checked = paciente.es_embarazada || false;
+                }
+                
+                // Diagnóstico
+                if (document.getElementById('diagnostico')) {
+                    document.getElementById('diagnostico').value = paciente.diagnostico || '';
+                }
+                
+                // Tipo de enfermedad (EDITABLE - este es uno de los cambios clave)
+                document.getElementById('enfermedad').value = paciente.enfermedad;
+                
+                // Aislamiento (EDITABLE - este es otro cambio clave)
+                document.getElementById('aislamiento').value = paciente.aislamiento;
+                
+                // Casos especiales (EDITABLES)
+                if (document.getElementById('caso_sociosanitario')) {
+                    document.getElementById('caso_sociosanitario').checked = paciente.caso_sociosanitario || false;
+                }
+                if (document.getElementById('espera_cardio')) {
+                    document.getElementById('espera_cardio').checked = paciente.espera_cardio || false;
+                }
+                
+                // Requerimientos clínicos (EDITABLES)
+                // Desmarcar todos primero
+                document.querySelectorAll('input[name="requerimientos"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                // Marcar los requerimientos actuales
+                if (paciente.requerimientos && Array.isArray(paciente.requerimientos)) {
+                    paciente.requerimientos.forEach(req => {
+                        const checkbox = document.querySelector(`input[name="requerimientos"][value="${req}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
+                
+                // Campos adicionales
+                if (document.getElementById('motivo_monitorizacion')) {
+                    document.getElementById('motivo_monitorizacion').value = paciente.motivo_monitorizacion || '';
+                }
+                if (document.getElementById('signos_monitorizacion')) {
+                    document.getElementById('signos_monitorizacion').value = paciente.signos_monitorizacion || '';
+                }
+                if (document.getElementById('notas')) {
+                    document.getElementById('notas').value = paciente.notas || '';
+                }
+                if (document.getElementById('detalle_procedimiento_invasivo')) {
+                    document.getElementById('detalle_procedimiento_invasivo').value = paciente.detalle_procedimiento_invasivo || '';
+                }
+                
+                // ✅ CAMBIO REALIZADO AQUÍ:
+                // Antes ocultaba explícitamente la sección de derivación.
+                // Ahora nos aseguramos de que esté visible pero el checkbox desmarcado por defecto.
+                // Esto permite derivar durante la reevaluación.
+                
+                const seccionDerivacion = document.getElementById('seccion-derivacion');
+                if (seccionDerivacion) {
+                    seccionDerivacion.style.display = 'block'; // Asegurar que sea visible
+                }
+                
+                // Resetear estado del checkbox de derivación
+                const derivacionCheckbox = document.getElementById('derivar-paciente');
+                if (derivacionCheckbox) {
+                    derivacionCheckbox.checked = false;
+                    toggleDerivacion(); // Esto ocultará los campos de destino/motivo hasta que se marque el check
+                }
+                
+                cargarHospitalesEnSelector(); // Cargar lista de hospitales para el select de derivación
+
+                // Abrir el modal
+                openModal('modal-ingresar');
+                
+            } catch (error) {
+                console.error('Error al abrir formulario de reevaluación:', error);
+                alert('❌ Error al cargar datos del paciente: ' + error.message);
             }
         }
 
@@ -1182,62 +1401,149 @@
             }
         }
 
-async function rechazarDerivacion(pacienteId) {
-    const motivoRechazo = prompt('¿Por qué se rechaza esta derivación?\n\nIngrese el motivo:');
-    
-    // Validar el motivo de rechazo
-    if (!motivoRechazo || motivoRechazo.trim() === '') {
-        alert('⚠️ Debe ingresar un motivo para rechazar la derivación');
-        return;
-    }
-    
-    // Confirmación final
-    if (!confirm('¿Confirmar rechazo de derivación? El paciente volverá al hospital de origen.')) return;
-    
-    try {
-        // La URL de fetch estaba rota y separada
-        const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/rechazar-derivacion`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ motivo_rechazo: motivoRechazo })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            alert('✅ Derivación rechazada. ' + result.mensaje);
-            cargarDatos();
-        } else {
-            // Manejo de errores de la API (por ejemplo, 400, 500)
-            const error = await response.json();
-            mostrarError(error);
+        async function rechazarDerivacion(pacienteId) {
+            // Solicitar motivo de rechazo
+            const motivoRechazo = prompt('¿Por qué se rechaza esta derivación?\n\nIngrese el motivo:');
+            
+            if (!motivoRechazo || motivoRechazo.trim() === '') {
+                alert('⚠️ Debe ingresar un motivo para rechazar la derivación');
+                return;
+            }
+            
+            if (!confirm('¿Confirmar rechazo de derivación? El paciente volverá al hospital de origen.')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/rechazar-derivacion`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ motivo_rechazo: motivoRechazo })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('✅ Derivación rechazada. ' + result.mensaje);
+                    cargarDatos();
+                } else {
+                    const error = await response.json();
+                    mostrarError(error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
         }
-    } catch (error) {
-        // Manejo de errores de red o del fetch
-        alert('❌ Error: ' + error.message);
-    }
-}
 
-async function confirmarEgreso(pacienteId) {
-    if (!confirm('¿Confirmar el egreso del paciente del hospital?\n\nEsto liberará la cama para otro paciente.')) return;
-    
-    try {
-        const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/confirmar-egreso`, {
-            method: 'POST'
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            // Solución mejorada de tu línea original para manejar si 'mensaje' no existe
-            alert(`✅ ${result?.mensaje ?? 'Egreso confirmado.'}`); 
-            cargarDatos();
-        } else {
-            const error = await response.json();
-            mostrarError(error);
+        async function confirmarEgreso(pacienteId) {
+            if (!confirm('¿Confirmar el egreso del paciente del hospital? Esto liberará la cama.')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/confirmar-egreso`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('✅ ' + result.mensaje);
+                    // La función cargarDatos debe ser síncrona o no debe llevar 'await'
+                    cargarDatos(); 
+                } else {
+                    const error = await response.json();
+                    // Asumiendo que 'mostrarError' es una función definida
+                    mostrarError(error); 
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
         }
-    } catch (error) {
-        alert('❌ Error: ' + error.message);
-    }
-}
+
+        // ============================================
+        // FUNCIONES DE REEVALUACIÓN Y ALTA
+        // ============================================
+
+        async function reevaluarPaciente(pacienteId) {
+            try {
+                // Obtener datos actuales del paciente
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes`);
+                const pacientes = await response.json();
+                const paciente = pacientes.find(p => p.id === pacienteId);
+                
+                if (!paciente) {
+                    alert('❌ Paciente no encontrado');
+                    return;
+                }
+                
+                // Abrir el formulario con los datos del paciente
+                document.getElementById('modal-title').textContent = 'Reevaluar Paciente';
+                document.getElementById('submit-text').textContent = 'Guardar Reevaluación';
+                document.getElementById('paciente-id').value = paciente.id;
+                document.getElementById('es-reevaluacion').value = 'true';
+                
+                // Llenar datos básicos (bloqueados)
+                document.getElementById('nombre').value = paciente.nombre;
+                document.getElementById('nombre').disabled = true;
+                document.getElementById('run').value = paciente.run;
+                document.getElementById('run').disabled = true;
+                document.getElementById('edad').value = paciente.edad;
+                document.getElementById('edad').disabled = true;
+                
+                // Seleccionar sexo (bloqueado)
+                if (paciente.sexo === 'hombre') {
+                    document.getElementById('sexo_hombre').checked = true;
+                } else {
+                    document.getElementById('sexo_mujer').checked = true;
+                }
+                document.getElementById('sexo_hombre').disabled = true;
+                document.getElementById('sexo_mujer').disabled = true;
+                
+                // Llenar enfermedad
+                document.getElementById('enfermedad').value = paciente.enfermedad;
+                
+                // Llenar aislamiento
+                document.getElementById('aislamiento').value = paciente.aislamiento || 'ninguno';
+                
+                // Marcar requerimientos actuales
+                document.querySelectorAll('input[name="requerimientos"]').forEach(checkbox => {
+                    checkbox.checked = paciente.requerimientos && paciente.requerimientos.includes(checkbox.value);
+                });
+                
+                // Casos especiales
+                document.getElementById('caso_sociosanitario').checked = paciente.caso_sociosanitario || false;
+                document.getElementById('espera_cardio').checked = paciente.espera_cardio || false;
+                
+                // Campos adicionales
+                document.getElementById('diagnostico').value = paciente.diagnostico || '';
+                document.getElementById('motivo_monitorizacion').value = paciente.motivo_monitorizacion || '';
+                document.getElementById('signos_monitorizacion').value = paciente.signos_monitorizacion || '';
+                document.getElementById('notas').value = paciente.notas || '';
+                document.getElementById('detalle_procedimiento_invasivo').value = paciente.detalle_procedimiento_invasivo || '';
+                
+                // Mostrar/ocultar campos condicionales
+                toggleCamposMonitorizacion();
+                toggleCamposProcedimientoInvasivo();
+                toggleEmbarazada();
+                
+                // ✅ MOSTRAR sección de derivación en reevaluación
+                const seccionDerivacion = document.getElementById('seccion-derivacion');
+                if (seccionDerivacion) {
+                    seccionDerivacion.style.display = 'block'; // Mostrar la sección
+                }
+                
+                // Resetear estado del checkbox de derivación
+                const derivacionCheckbox = document.getElementById('derivar-paciente');
+                if (derivacionCheckbox) {
+                    derivacionCheckbox.checked = false;
+                    toggleDerivacion(); // Esto ocultará los campos de destino/motivo hasta que se marque el check
+                }
+                
+                // Cargar lista de hospitales para el select de derivación
+                cargarHospitalesEnSelector();
+                
+                // Abrir modal
+                openModal('modal-ingresar');
+                
+            } catch (error) {
+                alert('❌ Error al cargar datos del paciente: ' + error.message);
+            }
+        }
 
         async function sugerirAlta(camaId) {
             if (!confirm('¿Sugerir alta para este paciente? La cama quedará marcada como candidata para alta.')) return;
@@ -1300,145 +1606,6 @@ async function confirmarEgreso(pacienteId) {
             }
         }
 
-        async function aceptarTraslado(camaId) {
-            if (!confirm('¿Confirmar que el paciente llegó a esta cama?')) return;
-            
-            try {
-                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/camas/${camaId}/completar-traslado`, {
-                    method: 'POST'
-                });
-                
-                if (response.ok) {
-                    alert('✅ Traslado completado exitosamente');
-                    cargarDatos();
-                } else {
-                    const error = await response.json();
-                    mostrarError(error);
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        }
-
-        async function rechazarTraslado(camaId) {
-            if (!confirm('¿Rechazar este traslado? La cama quedará libre y el paciente volverá a su cama anterior.')) return;
-            
-            try {
-                const camasResponse = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/camas`);
-                const camas = await camasResponse.json();
-                const cama = camas.find(c => c.id === camaId);
-                
-                if (!cama || !cama.paciente_id) {
-                    alert('❌ No se encontró el paciente en esta cama');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${cama.paciente_id}/cancelar-traslado`, {
-                    method: 'POST'
-                });
-                
-                if (response.ok) {
-                    alert('✅ Traslado rechazado. El paciente vuelve a su cama anterior.');
-                    cargarDatos();
-                } else {
-                    const error = await response.json();
-                    mostrarError(error);
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        }
-
-        async function manejarCambioCama(pacienteId) {
-            if (!confirm('¿Buscar nueva cama para este paciente?')) return;
-            
-            try {
-                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/opciones-cambio-cama`, {
-                    method: 'GET'
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.opciones && data.opciones.length > 0) {
-                        mostrarOpcionesCambio(pacienteId, data.opciones);
-                    } else {
-                        alert('⚠️ No hay camas disponibles para este paciente en este momento');
-                    }
-                } else {
-                    const error = await response.json();
-                    mostrarError(error);
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        }
-
-        function mostrarOpcionesCambio(pacienteId, opciones) {
-            const opcionesHtml = opciones.map((opcion, index) => `
-                <div class="border rounded p-4 hover:bg-gray-50 cursor-pointer" onclick="seleccionarOpcionCambio('${pacienteId}', '${opcion.cama_id}')">
-                    <div class="font-semibold">${opcion.cama_id}</div>
-                    <div class="text-sm text-gray-600">${opcion.servicio} - ${opcion.sala}</div>
-                    <div class="text-xs text-gray-500 mt-1">Prioridad: ${opcion.prioridad}</div>
-                    ${opcion.razon ? `<div class="text-xs text-blue-600 mt-1">${opcion.razon}</div>` : ''}
-                </div>
-            `).join('');
-            
-            const modalHtml = `
-                <div id="modal-opciones-cambio" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto">
-                        <div class="p-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-xl font-bold">Seleccionar Nueva Cama</h3>
-                                <button onclick="cerrarModalOpciones()" class="text-gray-500 hover:text-gray-700">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="space-y-3">
-                                ${opcionesHtml}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            const existingModal = document.getElementById('modal-opciones-cambio');
-            if (existingModal) {
-                existingModal.remove();
-            }
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-        }
-
-        function cerrarModalOpciones() {
-            const modal = document.getElementById('modal-opciones-cambio');
-            if (modal) {
-                modal.remove();
-            }
-        }
-
-        async function seleccionarOpcionCambio(pacienteId, camaId) {
-            try {
-                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/confirmar-opcion-cama`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cama_id: camaId })
-                });
-                
-                if (response.ok) {
-                    alert('✅ Cambio de cama iniciado');
-                    cerrarModalOpciones();
-                    cargarDatos();
-                } else {
-                    const error = await response.json();
-                    mostrarError(error);
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        }
-
         async function asignarCamasAutomaticamente() {
             if (!confirm('¿Asignar camas automáticamente a los pacientes en espera?')) return;
             
@@ -1460,6 +1627,31 @@ async function confirmarEgreso(pacienteId) {
             }
         }
 
+        // ============================================
+        // FORMULARIO DE PACIENTES
+        // ============================================
+
+        async function asignarCamaIndividual(pacienteId) {
+            if (!confirm('¿Buscar y asignar cama para este paciente?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/asignar-cama-local`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`✅ ${result.mensaje}`);
+                    cargarDatos();
+                } else {
+                    const error = await response.json();
+                    alert('❌ Error: ' + error.detail);
+                }
+            } catch (error) {
+                alert('❌ Error de conexión: ' + error.message);
+            }
+        }
+
         async function submitPacienteForm(event) {
             event.preventDefault();
             
@@ -1476,8 +1668,8 @@ async function confirmarEgreso(pacienteId) {
                 nombre: formData.get('nombre'),
                 run: formData.get('run'),
                 sexo: formData.get('sexo'),
-                edad: parseInt(formData.get('edad')),
-                edad_categoria: formData.get('edad_categoria') || 'adulto',
+                edad: parseInt(formData.get('edad')),  // Edad numérica
+                edad_categoria: formData.get('edad_categoria') || 'adulto',  // Por compatibilidad
                 enfermedad: formData.get('enfermedad'),
                 aislamiento: formData.get('aislamiento'),
                 es_embarazada: formData.get('es_embarazada') === 'on',
@@ -1494,8 +1686,10 @@ async function confirmarEgreso(pacienteId) {
             
             try {
                 let response;
+                let esDrivacion = false;
                 
                 if (esReevaluacion) {
+                    // Reevaluación completa (enfermedad, aislamiento, casos especiales, requerimientos)
                     response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/${pacienteId}/reevaluar`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -1513,6 +1707,7 @@ async function confirmarEgreso(pacienteId) {
                         })
                     });
                 } else {
+                    // Nuevo paciente
                     response = await fetch(`${API_BASE}/hospitales/${HOSPITAL_ID}/pacientes/ingresar`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1524,6 +1719,7 @@ async function confirmarEgreso(pacienteId) {
                     const result = await response.json();
                     const nuevoPacienteId = result.paciente?.id || pacienteId;
                     
+                    // Si se marcó derivación, derivar al paciente
                     if (derivarChecked) {
                         const hospitalDestino = formData.get('hospital_destino');
                         const motivoDerivacion = formData.get('motivo_derivacion');
@@ -1568,26 +1764,35 @@ async function confirmarEgreso(pacienteId) {
             }
         }
 
+        // ============================================
+        // MODALES
+        // ============================================
+
         function limpiarFormularioPaciente() {
+            // Limpiar completamente el formulario
             document.getElementById('form-paciente').reset();
             document.getElementById('modal-title').textContent = 'Registrar Nuevo Paciente';
             document.getElementById('submit-text').textContent = 'Registrar Paciente';
             document.getElementById('paciente-id').value = '';
             document.getElementById('es-reevaluacion').value = 'false';
             document.getElementById('nombre').disabled = false;
-            document.getElementById('run').disabled = false;
-            document.getElementById('edad').disabled = false;
+            document.getElementById('run').disabled = false;  // Habilitar RUN para nuevo paciente
+            document.getElementById('edad').disabled = false;  // Habilitar edad para nuevo paciente
             
+            // Habilitar radio buttons de sexo
             document.getElementById('sexo_hombre').disabled = false;
             document.getElementById('sexo_mujer').disabled = false;
             
+            // Desmarcar todos los checkboxes
             document.querySelectorAll('input[name="requerimientos"]').forEach(checkbox => {
                 checkbox.checked = false;
             });
             
+            // Resetear derivación
             document.getElementById('derivar-paciente').checked = false;
             toggleDerivacion();
             
+            // Mostrar sección de derivación (en caso de que se haya ocultado en reevaluación)
             const seccionDerivacion = document.getElementById('seccion-derivacion');
             if (seccionDerivacion) {
                 seccionDerivacion.style.display = 'block';
@@ -1596,8 +1801,8 @@ async function confirmarEgreso(pacienteId) {
 
         function abrirFormularioNuevoPaciente() {
             limpiarFormularioPaciente();
-            cargarHospitalesEnSelector();
-            toggleEmbarazada();
+            cargarHospitalesEnSelector();  // Cargar lista de hospitales
+            toggleEmbarazada();  // Inicializar visibilidad de embarazada
             openModal('modal-ingresar');
         }
 
@@ -1613,7 +1818,9 @@ async function confirmarEgreso(pacienteId) {
         // INICIALIZACIÓN
         // ============================================
 
+        // Inicializar event listeners para requerimientos
         document.addEventListener('DOMContentLoaded', function() {
+            // Event listeners para requerimientos
             const requerimientosCheckboxes = document.querySelectorAll('input[name="requerimientos"]');
             requerimientosCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
@@ -1622,13 +1829,17 @@ async function confirmarEgreso(pacienteId) {
                 });
             });
             
+            // Event listeners para radio buttons de sexo
             const sexoRadios = document.querySelectorAll('input[name="sexo"]');
             sexoRadios.forEach(radio => {
                 radio.addEventListener('change', toggleEmbarazada);
             });
         });
 
+        // Cargar datos al inicio
         cargarDatos();
+
+        // Actualizar cada 5 segundos
         setInterval(cargarDatos, 5000);
     </script>
 </body>
