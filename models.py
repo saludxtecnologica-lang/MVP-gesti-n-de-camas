@@ -15,16 +15,16 @@ class ServicioEnum(str, Enum):
     CIRUGIA = "cirugia"
     GINECO = "gineco"
     AISLAMIENTO = "aislamiento"
-    MEDICO_QUIRURGICO = "medico_quirurgico"  # Nuevo servicio compartido
+    MEDICO_QUIRURGICO = "medico_quirurgico"
 
 
 class EstadoCamaEnum(str, Enum):
     LIBRE = "libre"
     OCUPADA = "ocupada"
     PENDIENTE_TRASLADO = "pendiente_traslado"  # Amarillo - cama destino
-    EN_TRASLADO = "en_traslado"  # Naranja - cama origen (esperando confirmación)
-    ALTA_SUGERIDA = "alta_sugerida"  # Azul - paciente sin requerimientos
-    REQUIERE_BUSQUEDA_CAMA = "requiere_busqueda_cama"  # 🆕 NUEVO - Morado - indica que el paciente necesita nueva cama pero aún no se ha buscado
+    EN_TRASLADO = "en_traslado"  # Naranja - cama origen
+    ALTA_SUGERIDA = "alta_sugerida"  # Azul - sin requerimientos
+    REQUIERE_BUSQUEDA_CAMA = "requiere_busqueda_cama"  # Morado - necesita nueva cama
 
 
 class SexoEnum(str, Enum):
@@ -53,18 +53,26 @@ class EnfermedadEnum(str, Enum):
 
 class AislamientoEnum(str, Enum):
     NINGUNO = "ninguno"
-    CONTACTO = "contacto"  # Puede compartir sala
-    GOTITAS = "gotitas"  # Puede compartir sala
-    AEREO = "aereo"  # Cama individual exclusiva
-    AMBIENTE_PROTEGIDO = "ambiente_protegido"  # Cama individual exclusiva
-    AISLAMIENTO_ESPECIAL = "aislamiento_especial"  # C. difficile, KPC, otros - Cama individual exclusiva
+    CONTACTO = "contacto"
+    GOTITAS = "gotitas"
+    AEREO = "aereo"
+    AMBIENTE_PROTEGIDO = "ambiente_protegido"
+    AISLAMIENTO_ESPECIAL = "aislamiento_especial"
 
 
 class ComplejidadEnum(str, Enum):
-    BAJA = "baja"  # 1-2 puntos - Sala básica
-    MEDIA = "media"  # 3-4 puntos - UTI
-    ALTA = "alta"  # 5+ puntos - UCI
+    BAJA = "baja"
+    MEDIA = "media"
+    ALTA = "alta"
 
+
+class TipoPacienteEnum(str, Enum):
+    """Tipos de pacientes para priorización en cola"""
+    HOSPITALIZADO = "hospitalizado"
+    URGENCIA = "urgencia"
+    DERIVADO = "derivado"
+    AMBULATORIO = "ambulatorio"
+    PENDIENTE_TRASLADO = "pendiente_traslado"
 
 # ============================================
 # REQUERIMIENTOS CLÍNICOS CON PUNTUACIÓN
@@ -73,37 +81,36 @@ class ComplejidadEnum(str, Enum):
 REQUERIMIENTOS_PUNTOS = {
     # Baja complejidad (1 punto cada uno)
     "tratamiento_endovenoso": 1,
-    "dolor_intenso": 1,  # EVA >= 7
+    "dolor_intenso": 1,
     "oxigeno_naricera": 1,
     "oxigeno_mascarilla_multiventuri": 1,
     "aspiracion_invasiva": 1,
-    "control_examenes_sangre_2mas": 1,  # Control con examen de sangre 2+ veces
-    "curaciones_alta_complejidad": 1,  # VAC, gran quemados, etc.
+    "control_examenes_sangre_2mas": 1,
+    "curaciones_alta_complejidad": 1,
     "irrigacion_vesical": 1,
-    "observacion_riesgo_compromiso": 1,  # Observación por riesgo de compromiso clínico
-    "procedimiento_invasivo_medico": 1,  # Procedimiento invasivo realizado por médico
+    "observacion_riesgo_compromiso": 1,
+    "procedimiento_invasivo_medico": 1,
     
     # Complejidad UTI (3 puntos cada uno)
     "drogas_vasoactivas": 3,
     "monitorizacion_continua": 3,
     "oxigeno_mascarilla_reservorio": 3,
     "oxigeno_cnaf": 3,
-    "oxigeno_vmni": 3,  # Ventilación mecánica no invasiva
+    "oxigeno_vmni": 3,
     "dialisis_aguda": 3,
-    "bic_insulina": 3,  # BIC insulina
+    "bic_insulina": 3,
     
     # Complejidad UCI (5 puntos cada uno)
-    "oxigeno_vmi": 5,  # Ventilación mecánica invasiva
+    "oxigeno_vmi": 5,
     "procuramiento_organos_tejidos": 5,
     
-    # Requerimientos que NO definen cama ni necesidad de hospitalización (0 puntos)
+    # Requerimientos que NO definen cama (0 puntos)
     "kinesioterapia_respiratoria": 0,
     "curaciones_heridas": 0,
     "control_examenes_sangre_1vez": 0,
-    "tratamiento_endovenoso_2menos": 0,  # Tratamiento endovenoso por 2 veces o menos
+    "tratamiento_endovenoso_2menos": 0,
 }
 
-# Requerimientos que NO definen cama ni necesidad de hospitalización
 REQUERIMIENTOS_SIN_HOSPITALIZACION = [
     "kinesioterapia_respiratoria",
     "curaciones_heridas",
@@ -111,7 +118,6 @@ REQUERIMIENTOS_SIN_HOSPITALIZACION = [
     "tratamiento_endovenoso_2menos"
 ]
 
-# Requerimientos específicos que determinan UCI/UTI
 REQUERIMIENTOS_UCI = [
     "oxigeno_vmi",
     "procuramiento_organos_tejidos"
@@ -127,6 +133,10 @@ REQUERIMIENTOS_UTI = [
     "bic_insulina"
 ]
 
+
+# ============================================
+# FUNCIONES AUXILIARES - COMPLEJIDAD
+# ============================================
 
 def calcular_puntos_complejidad(requerimientos: List[str]) -> int:
     """Calcula el puntaje total de complejidad basado en requerimientos."""
@@ -144,13 +154,13 @@ def tiene_requerimientos_uti(requerimientos: List[str]) -> bool:
 
 
 def determinar_complejidad_por_puntos(puntos: int) -> ComplejidadEnum:
-    """Determina la complejidad según el puntaje total (solo para priorización)."""
+    """Determina la complejidad según el puntaje total."""
     if puntos >= 5:
-        return ComplejidadEnum.ALTA  # UCI
+        return ComplejidadEnum.ALTA
     elif puntos >= 3:
-        return ComplejidadEnum.MEDIA  # UTI
+        return ComplejidadEnum.MEDIA
     else:
-        return ComplejidadEnum.BAJA  # Sala básica
+        return ComplejidadEnum.BAJA
 
 
 def determinar_categoria_edad(edad: int) -> EdadCategoriaEnum:
@@ -168,32 +178,34 @@ def determinar_categoria_edad(edad: int) -> EdadCategoriaEnum:
 
 
 # ============================================
-# MODELOS
+# MODELOS SQLMODEL
 # ============================================
 
 class Hospital(SQLModel, table=True):
+    """Modelo de Hospital"""
     id: str = Field(primary_key=True)
     nombre: str
     codigo: str = Field(unique=True)
     
-    # Relaciones
     camas: List["Cama"] = Relationship(back_populates="hospital")
     pacientes: List["Paciente"] = Relationship(back_populates="hospital")
 
 
 class Paciente(SQLModel, table=True):
+    """Modelo de Paciente"""
     id: str = Field(primary_key=True)
     hospital_id: str = Field(foreign_key="hospital.id")
     
     # Datos Básicos
     nombre: str
-    run: str  # RUN del paciente
+    run: str
     sexo: SexoEnum
-    edad: int  # Edad en años
+    edad: int
     edad_categoria: EdadCategoriaEnum
     enfermedad: EnfermedadEnum
+    tipo_paciente: Optional[TipoPacienteEnum] = Field(default=None)
     aislamiento: AislamientoEnum = AislamientoEnum.NINGUNO
-    ingreso: datetime = Field(default_factory=datetime.utcnow)  # ✅ CORREGIDO: nombre correcto
+    fecha_ingreso: datetime = Field(default_factory=datetime.utcnow)
     
     # Características Especiales
     es_embarazada: bool = False
@@ -213,17 +225,43 @@ class Paciente(SQLModel, table=True):
     notas: Optional[str] = Field(default=None)
     detalle_procedimiento_invasivo: Optional[str] = Field(default=None)
     
-    # Estado de asignación
+    # ============================================
+    # CAMPOS DE ESTADO DE ASIGNACIÓN Y COLA
+    # ============================================
+    
+    # Estado básico de espera (paciente sin cama asignada)
     en_espera: bool = True
     tiempo_espera_min: int = 0
+    
+    # Asignación de cama
     cama_id: Optional[str] = Field(default=None, foreign_key="cama.id")
     cama_destino_id: Optional[str] = Field(default=None)
     
-    # 🆕 NUEVO: Control manual de búsqueda de cama
-    requiere_cambio_cama: bool = Field(default=False)  # ✅ Indica que necesita cambiar de cama
-    motivo_cambio_cama: Optional[str] = Field(default=None)  # Razón por la que necesita cambiar de cama
+    # ============================================
+    # CAMPOS PARA COLA DE PRIORIDAD
+    # ============================================
     
-    # Control de traslado automático (legacy - se mantiene por compatibilidad)
+    # Flag que indica si el paciente está en la cola de prioridad
+    en_lista_espera: bool = Field(default=False)
+    
+    # Flag que indica si el paciente requiere una nueva cama (para traslados)
+    requiere_nueva_cama: bool = Field(default=False)
+    
+    # Prioridad calculada para la cola
+    prioridad_calculada: float = Field(default=0.0)
+    
+    # Timestamp de ingreso a la cola
+    timestamp_ingreso_cola: Optional[datetime] = Field(default=None)
+    
+    # ============================================
+    # CAMPOS LEGACY (mantener compatibilidad)
+    # ============================================
+    
+    # Control manual de búsqueda de cama (legacy - usar requiere_nueva_cama)
+    requiere_busqueda_cama: bool = Field(default=False)
+    motivo_cambio_cama: Optional[str] = Field(default=None)
+    
+    # Control de traslado automático
     requiere_aprobacion_traslado: bool = False
     motivo_traslado_pendiente: Optional[str] = Field(default=None)
     
@@ -231,10 +269,16 @@ class Paciente(SQLModel, table=True):
     hospital_origen_id: Optional[str] = Field(default=None)
     hospital_derivacion_id: Optional[str] = Field(default=None)
     derivacion_pendiente: bool = False
+    derivacion_aceptada: bool = False  # Agregado para compatibilidad
     motivo_derivacion: Optional[str] = Field(default=None)
     motivo_rechazo_derivacion: Optional[str] = Field(default=None)
     cama_origen_id: Optional[str] = Field(default=None)
     egreso_confirmado: bool = False
+    paciente_aceptado_destino: bool = False  # Paciente ya aceptado en hospital destino, pero cama origen aún no egresada
+    timestamp_aceptacion_derivacion: Optional[datetime] = Field(default=None)  # Marca cuándo fue aceptado
+    
+    # Flag adicional para cambio de cama (diferente de requiere_nueva_cama)
+    requiere_cambio_cama: bool = Field(default=False)
 
     # Relaciones
     hospital: Hospital = Relationship(back_populates="pacientes")
@@ -248,6 +292,7 @@ class Paciente(SQLModel, table=True):
 
 
 class Cama(SQLModel, table=True):
+    """Modelo de Cama"""
     id: str = Field(primary_key=True)
     hospital_id: str = Field(foreign_key="hospital.id")
     
@@ -282,23 +327,20 @@ class Cama(SQLModel, table=True):
     )
 
 
+# ============================================
+# CONFIGURACIÓN DE CAMAS POR HOSPITAL
+# ============================================
+
 def get_configuracion_inicial_camas_escalado(hospital_id: str, tipo_hospital: str = "completo") -> List[Dict[str, Any]]:
     """
     Retorna la configuración inicial de camas para un hospital según su tipo.
-    
-    Args:
-        hospital_id: ID del hospital
-        tipo_hospital: "completo" para Puerto Montt, "basico" para Calbuco/Llanquihue
     """
     camas = []
     
     if tipo_hospital == "basico":
-        # HOSPITALES SECUNDARIOS (Calbuco, Llanquihue): 4 salas de 4 camas = 16 camas
-        
-        # 4 SALAS COMPARTIDAS DE 4 CAMAS = 16 CAMAS MÉDICO-QUIRÚRGICAS
         cama_letras = ['A', 'B', 'C', 'D']
-        for sala_num in range(1, 5):  # Salas 1-4
-            for letra in cama_letras:  # 4 camas por sala (A, B, C, D)
+        for sala_num in range(1, 5):
+            for letra in cama_letras:
                 camas.append({
                     "id": f"{hospital_id}-{sala_num}-{letra}",
                     "hospital_id": hospital_id,
@@ -314,12 +356,11 @@ def get_configuracion_inicial_camas_escalado(hospital_id: str, tipo_hospital: st
                     "sexo_sala": None,
                     "pacientes_en_sala": 0
                 })
-        
         return camas
     
     # HOSPITAL COMPLETO (Puerto Montt)
     
-    # UCI - 3 camas individuales (200-202)
+    # UCI - 3 camas individuales
     for i in range(1, 4):
         camas.append({
             "id": f"{hospital_id}-{200 + i - 1}",
@@ -337,7 +378,7 @@ def get_configuracion_inicial_camas_escalado(hospital_id: str, tipo_hospital: st
             "pacientes_en_sala": 0
         })
 
-    # UTI - 3 camas individuales (203-205)
+    # UTI - 3 camas individuales
     for i in range(1, 4):
         camas.append({
             "id": f"{hospital_id}-{202 + i}",
@@ -355,16 +396,16 @@ def get_configuracion_inicial_camas_escalado(hospital_id: str, tipo_hospital: st
             "pacientes_en_sala": 0
         })
 
-    # MEDICINA - 3 salas compartidas de 3 camas = 9 camas (501-A, 501-B, 501-C, 502-A, etc.)
+    # MEDICINA - 3 salas compartidas de 3 camas
     cama_letras = ['A', 'B', 'C']
-    for sala_num in range(1, 4):  # 3 salas (501, 502, 503)
+    for sala_num in range(1, 4):
         num_sala = 500 + sala_num
-        for cama_idx, letra in enumerate(cama_letras):
+        for letra in cama_letras:
             camas.append({
                 "id": f"{hospital_id}-{num_sala}-{letra}",
                 "hospital_id": hospital_id,
                 "servicio": ServicioEnum.MEDICINA,
-                "sala": f"Sala {num_sala}",  # Cada sala con su número
+                "sala": f"Sala {num_sala}",
                 "numero": num_sala,
                 "estado": EstadoCamaEnum.LIBRE,
                 "complejidad": ComplejidadEnum.BAJA,
@@ -376,7 +417,7 @@ def get_configuracion_inicial_camas_escalado(hospital_id: str, tipo_hospital: st
                 "pacientes_en_sala": 0
             })
             
-    # AISLAMIENTO - 3 camas individuales (504, 505, 506) - después de medicina
+    # AISLAMIENTO - 3 camas individuales
     for i in range(1, 4):
         camas.append({
             "id": f"{hospital_id}-{503 + i}",
@@ -394,15 +435,15 @@ def get_configuracion_inicial_camas_escalado(hospital_id: str, tipo_hospital: st
             "pacientes_en_sala": 0
         })
             
-    # CIRUGÍA - 3 salas compartidas de 3 camas = 9 camas (601-A, 601-B, 601-C, 602-A, etc.)
-    for sala_num in range(1, 4):  # 3 salas (601, 602, 603)
+    # CIRUGÍA - 3 salas compartidas de 3 camas
+    for sala_num in range(1, 4):
         num_sala = 600 + sala_num
-        for cama_idx, letra in enumerate(cama_letras):
+        for letra in cama_letras:
             camas.append({
                 "id": f"{hospital_id}-{num_sala}-{letra}",
                 "hospital_id": hospital_id,
                 "servicio": ServicioEnum.CIRUGIA,
-                "sala": f"Sala {num_sala}",  # Cada sala con su número
+                "sala": f"Sala {num_sala}",
                 "numero": num_sala,
                 "estado": EstadoCamaEnum.LIBRE,
                 "complejidad": ComplejidadEnum.BAJA,
@@ -414,15 +455,15 @@ def get_configuracion_inicial_camas_escalado(hospital_id: str, tipo_hospital: st
                 "pacientes_en_sala": 0
             })
             
-    # GINECOLOGÍA - 2 salas compartidas de 3 camas = 6 camas (604-A, 604-B, 604-C, 605-A, etc.)
-    for sala_num in range(1, 3):  # 2 salas (604, 605)
+    # GINECOLOGÍA - 2 salas compartidas de 3 camas
+    for sala_num in range(1, 3):
         num_sala = 603 + sala_num
-        for cama_idx, letra in enumerate(cama_letras):
+        for letra in cama_letras:
             camas.append({
                 "id": f"{hospital_id}-{num_sala}-{letra}",
                 "hospital_id": hospital_id,
                 "servicio": ServicioEnum.GINECO,
-                "sala": f"Sala {num_sala}",  # Cada sala con su número
+                "sala": f"Sala {num_sala}",
                 "numero": num_sala,
                 "estado": EstadoCamaEnum.LIBRE,
                 "complejidad": ComplejidadEnum.BAJA,
@@ -449,11 +490,9 @@ def init_multihospital_system(session):
     
     total_camas = 0
     for config in hospitales_config:
-        # Crear hospital
         hospital = Hospital(id=config["id"], nombre=config["nombre"], codigo=config["id"])
         session.add(hospital)
         
-        # Crear camas según tipo de hospital
         camas_data = get_configuracion_inicial_camas_escalado(config["id"], config["tipo"])
         for c_data in camas_data:
             cama = Cama(**c_data)
@@ -463,25 +502,19 @@ def init_multihospital_system(session):
         print(f"✅ {config['nombre']}: {len(camas_data)} camas")
     
     session.commit()
-    print(f"\n✅ Sistema multi-hospitalario inicializado con {total_camas} camas totales en {len(hospitales_config)} hospitales.")
+    print(f"\n✅ Sistema multi-hospitalario inicializado con {total_camas} camas totales.")
 
 
 def get_configuracion_inicial_camas(hospital_id: str) -> List[Dict[str, Any]]:
-    """
-    Retorna la configuración inicial de camas para un hospital (versión completa).
-    """
+    """Retorna la configuración inicial de camas para un hospital."""
     return get_configuracion_inicial_camas_escalado(hospital_id, "completo")
 
 
 def init_db_with_data(session, hospital_id: str = "HOSP-001", hospital_nombre: str = "Hospital Central"):
-    """
-    Inicializa la base de datos con un hospital y sus camas.
-    """
-    # Crear hospital
+    """Inicializa la base de datos con un hospital y sus camas."""
     hospital = Hospital(id=hospital_id, nombre=hospital_nombre, codigo=hospital_id)
     session.add(hospital)
     
-    # Crear camas
     camas_data = get_configuracion_inicial_camas(hospital_id)
     for c_data in camas_data:
         cama = Cama(**c_data)

@@ -15,3 +15,7 @@ sqlalchemy==2.0.35
 # Utilidades
 pydantic==2.9.2
 python-multipart==0.0.12
+
+# 🆕 NUEVO: Sistema de Cola de Prioridad
+# Scheduler para actualización periódica de tiempos de espera
+apscheduler==3.10.4

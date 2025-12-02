@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Script para inicializar el sistema de gestión de camas hospitalarias.
+"""
+
 import requests
 import sys
 
@@ -5,136 +10,224 @@ BASE_URL = "http://localhost:8000"
 
 
 def verificar_servidor():
-    """Verifica que el servidor esté corriendo"""
-    print("🔍 Verificando servidor...")
+    """Verifica que el servidor esté corriendo."""
     try:
         response = requests.get(f"{BASE_URL}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Servidor respondiendo correctamente")
+            print("✅ Servidor conectado")
             return True
-    except requests.exceptions.RequestException:
-        print("❌ El servidor no está corriendo")
-        print("\n💡 Por favor inicia el servidor primero:")
+        else:
+            print(f"❌ Servidor respondió con código {response.status_code}")
+            return False
+    except requests.exceptions.ConnectionError:
+        print("❌ No se puede conectar al servidor.")
+        print("   Asegúrate de que el servidor esté corriendo:")
         print("   python main.py")
+        return False
+    except Exception as e:
+        print(f"❌ Error: {e}")
         return False
 
 
-def inicializar_hospitales():
-    """Inicializa los 3 hospitales del sistema"""
-    print("\n🏥 Inicializando sistema multi-hospitalario...")
+def limpiar_sistema():
+    """Elimina todos los hospitales existentes."""
+    print("\n🧹 Limpiando sistema existente...")
     
-    hospitales = [
-        {"id": "PMONTT", "nombre": "Hospital Puerto Montt"},
-        {"id": "CALBUCO", "nombre": "Hospital Calbuco"},
-        {"id": "LLANHUE", "nombre": "Hospital Llanquihue"},
+    try:
+        # Obtener lista de hospitales
+        response = requests.get(f"{BASE_URL}/hospitales")
+        if response.status_code == 200:
+            hospitales = response.json()
+            for hospital in hospitales:
+                hospital_id = hospital.get('id')
+                if hospital_id:
+                    del_response = requests.delete(f"{BASE_URL}/hospitales/{hospital_id}")
+                    if del_response.status_code == 200:
+                        print(f"   ✅ Hospital {hospital_id} eliminado")
+                    else:
+                        print(f"   ⚠️ No se pudo eliminar {hospital_id}")
+            print("✅ Sistema limpiado")
+            return True
+        else:
+            print("   No hay hospitales para limpiar")
+            return True
+    except Exception as e:
+        print(f"   ⚠️ Error limpiando: {e}")
+        return True  # Continuar de todos modos
+
+
+def inicializar_hospitales():
+    """Inicializa los hospitales del sistema."""
+    print("\n🏥 Inicializando hospitales...")
+    
+    try:
+        response = requests.post(f"{BASE_URL}/hospitales/inicializar-multi")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print("✅ Sistema inicializado:")
+            
+            # ✅ CORREGIDO: Manejar diferentes formatos de respuesta
+            total_hospitales = data.get('total_hospitales', len(data.get('hospitales', [])))
+            total_camas = data.get('total_camas', 0)
+            
+            print(f"   Total de hospitales: {total_hospitales}")
+            print(f"   Total de camas: {total_camas}")
+            
+            hospitales = data.get('hospitales', [])
+            for h in hospitales:
+                nombre = h.get('nombre', h.get('id', 'Desconocido'))
+                camas = h.get('camas', 0)
+                print(f"   - {nombre}: {camas} camas")
+            
+            return True
+        elif response.status_code == 400:
+            error = response.json()
+            print(f"⚠️ {error.get('detail', 'Sistema ya inicializado')}")
+            return True  # Ya está inicializado, no es error
+        else:
+            print(f"❌ Error inicializando: {response.status_code}")
+            print(f"   {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return False
+
+
+def crear_pacientes_prueba():
+    """Crea algunos pacientes de prueba."""
+    print("\n👥 Creando pacientes de prueba...")
+    
+    pacientes_prueba = [
+        {
+            "nombre": "María González",
+            "run": "12345678-9",
+            "sexo": "mujer",
+            "edad": 45,
+            "enfermedad": "medica",
+            "aislamiento": "ninguno",
+            "requerimientos": ["tratamiento_endovenoso", "oxigeno_naricera"],
+            "es_embarazada": False,
+            "caso_sociosanitario": False,
+            "espera_cardio": False
+        },
+        {
+            "nombre": "Juan Pérez",
+            "run": "98765432-1",
+            "sexo": "hombre",
+            "edad": 67,
+            "enfermedad": "quirurgica",
+            "aislamiento": "ninguno",
+            "requerimientos": ["monitorizacion_continua", "drogas_vasoactivas"],
+            "es_embarazada": False,
+            "caso_sociosanitario": False,
+            "espera_cardio": False
+        },
+        {
+            "nombre": "Ana Muñoz",
+            "run": "11111111-1",
+            "sexo": "mujer",
+            "edad": 32,
+            "enfermedad": "obstetrica",
+            "aislamiento": "ninguno",
+            "requerimientos": ["tratamiento_endovenoso"],
+            "es_embarazada": True,
+            "caso_sociosanitario": False,
+            "espera_cardio": False
+        }
     ]
     
-    for hospital in hospitales:
+    hospital_id = "PMONTT"
+    creados = 0
+    
+    for paciente in pacientes_prueba:
         try:
             response = requests.post(
-                f"{BASE_URL}/hospitales/inicializar-multi",
-                timeout=10
+                f"{BASE_URL}/hospitales/{hospital_id}/pacientes/ingresar",
+                json=paciente
             )
             
             if response.status_code == 200:
                 data = response.json()
-                print(f"\n✅ Sistema inicializado:")
-                print(f"   Total de hospitales: {data['total_hospitales']}")
-                print(f"   Total de camas: {data['total_camas']}")
-                for hosp_info in data['hospitales']:
-                    print(f"   • {hosp_info['nombre']}: {hosp_info['camas']} camas")
-                return True
-            elif response.status_code == 400:
-                print("ℹ️ El sistema ya está inicializado")
-                return True
+                print(f"   ✅ {paciente['nombre']} - Prioridad: {data.get('prioridad', 'N/A')}")
+                creados += 1
             else:
-                print(f"❌ Error al inicializar: {response.text}")
-                return False
+                print(f"   ⚠️ Error creando {paciente['nombre']}: {response.text}")
                 
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Error de conexión: {e}")
-            return False
+        except Exception as e:
+            print(f"   ⚠️ Error: {e}")
+    
+    print(f"✅ {creados}/{len(pacientes_prueba)} pacientes creados")
+    return creados > 0
 
 
-def mostrar_estadisticas():
-    """Muestra estadísticas de todos los hospitales"""
-    print("\n📊 ESTADÍSTICAS DEL SISTEMA\n")
-    print("="*80)
+def mostrar_estado():
+    """Muestra el estado actual del sistema."""
+    print("\n📊 Estado del sistema:")
     
-    hospitales = [
-        {"id": "PMONTT", "nombre": "Hospital Puerto Montt"},
-        {"id": "CALBUCO", "nombre": "Hospital Calbuco"},
-        {"id": "LLANHUE", "nombre": "Hospital Llanquihue"},
-    ]
-    
-    for hospital in hospitales:
-        try:
-            response = requests.get(
-                f"{BASE_URL}/hospitales/{hospital['id']}/estadisticas",
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                stats = response.json()
-                print(f"\n🏥 {hospital['nombre'].upper()}")
-                print("-" * 40)
-                print(f"   📈 Total de camas: {stats['total_camas']}")
-                print(f"   📊 Tasa de ocupación: {stats['tasa_ocupacion']}%")
-                print(f"   ⏳ Pacientes en espera: {stats['pacientes_en_espera']}")
+    try:
+        # Estadísticas de Puerto Montt
+        response = requests.get(f"{BASE_URL}/hospitales/PMONTT/estadisticas")
+        if response.status_code == 200:
+            stats = response.json()
+            print(f"\n   Hospital Puerto Montt:")
+            print(f"   - Total camas: {stats.get('total_camas', 0)}")
+            print(f"   - Ocupadas: {stats.get('por_estado', {}).get('ocupada', 0)}")
+            print(f"   - Libres: {stats.get('por_estado', {}).get('libre', 0)}")
+            print(f"   - En espera: {stats.get('pacientes_en_espera', 0)}")
+            print(f"   - Tasa ocupación: {stats.get('tasa_ocupacion', 0)}%")
+        
+        # Cola de prioridad
+        response = requests.get(f"{BASE_URL}/hospitales/PMONTT/cola-prioridad")
+        if response.status_code == 200:
+            data = response.json()
+            pacientes = data.get('pacientes', [])
+            if pacientes:
+                print(f"\n   Cola de prioridad ({len(pacientes)} pacientes):")
+                for i, p in enumerate(pacientes[:5], 1):
+                    print(f"   {i}. {p.get('nombre', 'N/A')} - Prioridad: {p.get('prioridad', 0):.1f}")
+            else:
+                print("\n   Cola de prioridad: vacía")
                 
-                print(f"\n   Estados:")
-                emojis = {
-                    "libre": "⚪",
-                    "ocupada": "🟢",
-                    "pendiente_traslado": "🟡",
-                    "en_traslado": "🟠",
-                    "alta_sugerida": "🔵"
-                }
-                for estado, cantidad in stats['por_estado'].items():
-                    if cantidad > 0:
-                        emoji = emojis.get(estado, "⚫")
-                        print(f"   {emoji} {estado}: {cantidad}")
-                
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Error obteniendo estadísticas de {hospital['nombre']}: {e}")
-    
-    print("\n" + "="*80)
+    except Exception as e:
+        print(f"   ⚠️ Error obteniendo estado: {e}")
 
 
 def main():
-    print("="*80)
-    print("  CONFIGURACIÓN INICIAL DEL SISTEMA MULTI-HOSPITALARIO")
-    print("  ✅ Sistema v3.0 - Red de Hospitales")
-    print("="*80)
+    """Función principal."""
+    print("=" * 60)
+    print("🏥 SETUP - Sistema de Gestión de Camas Hospitalarias")
+    print("=" * 60)
     
-    # 1. Verificar servidor
+    # Verificar conexión
     if not verificar_servidor():
         sys.exit(1)
     
-    # 2. Inicializar hospitales
+    # Preguntar si limpiar
+    respuesta = input("\n¿Limpiar sistema existente? (s/N): ").strip().lower()
+    if respuesta == 's':
+        limpiar_sistema()
+    
+    # Inicializar hospitales
     if not inicializar_hospitales():
-        print("\n❌ No se pudo inicializar el sistema")
+        print("\n❌ Error inicializando el sistema")
         sys.exit(1)
     
-    # 3. Mostrar estadísticas
-    mostrar_estadisticas()
+    # Preguntar si crear pacientes de prueba
+    respuesta = input("\n¿Crear pacientes de prueba? (s/N): ").strip().lower()
+    if respuesta == 's':
+        crear_pacientes_prueba()
     
-    # 4. Información final
-    print("\n✨ ¡Sistema multi-hospitalario listo!")
-    print("\n🌐 Próximos pasos:")
-    print("   1. Abre el dashboard: http://localhost:8000/dashboard")
-    print("   2. Selecciona un hospital en el menú superior")
-    print("   3. Registra pacientes y gestiona camas")
-    print("\n📚 Hospitales disponibles:")
-    print("   • Hospital Puerto Montt (PMONTT) - 30 camas")
-    print("   • Hospital Calbuco (CALBUCO) - 16 camas")
-    print("   • Hospital Llanquihue (LLANHUE) - 16 camas")
-    print("\n" + "="*80)
+    # Mostrar estado
+    mostrar_estado()
+    
+    print("\n" + "=" * 60)
+    print("✅ Setup completado")
+    print("   Dashboard: http://localhost:8000/dashboard")
+    print("   API Docs: http://localhost:8000/docs")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n\n⚠️ Configuración cancelada por el usuario")
-        sys.exit(0)
+    main()
